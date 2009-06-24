@@ -1,0 +1,86 @@
+<html>
+    <head>
+	    <title>Vizi Sound Project</title>
+	    <meta name="description" content="An aspiring digital-audio-workstation implemented in an unconventional manner">
+        <style>
+            body {
+                font-family: sans-serif;
+                font-size: 0.8em;
+		background-color: black;
+		color: white;
+	}
+	.content {
+		position: relative;
+		top: -110px;
+	}
+	a {
+	    color: #277699;}
+            .container {
+                width: 993px;
+                margin: auto;
+            }
+            .title h1 {
+                display: none;
+            }
+            .title {
+                background-image: url('logo_www.png');
+                width: 450px;
+                height: 192px;
+		position: relative;
+		top: -25px;
+                left: -120px;
+	}
+	p {
+	}
+	.follow {
+		position: relative;
+		left: 330px;
+		top: 100px;
+		cursor: default;
+	}
+	.follow img {
+		border: none;
+	}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="title">
+		    <h1>Vizi Sound Project</h1>
+		    <div class="follow">
+			    <a href="http://www.launchpad.net/vizi"><img width="32" src="lp-diamond.png"/></a>
+			    <a href="http://twitter.com/dasacc22"><img width="24" src="twitter_logo.png"/></a>
+		    </div>
+	</div>
+	<div class="content">
+            <p>
+            <div><em>June 10, 2009</em></div>
+            Publicly releasing the code under GPLv2 via <a href="http://www.launchpad.net/vizi">launchpad.net/vizi</a>.
+            
+	    <br/><br/><a href="http://vizi.dasa.cc/vizi-public-release.ogv">Watch the Video here</a> or <a href="http://www.youtube.com/watch?v=Zd2DpyRlE4k">on YouTube</a></p>
+	    <br/><p>
+            <div><em>May 28, 2009</em></div>
+            Made quite a few changes. Created a two control orb for manually setting parameters. Added more sndobj's besides Oscili, namely: VDelay, SndIn, Gain.
+            Allow for creation and destruction of objects through keyboard shortcuts (for now). Also theres a little info box on hover that describes relevant parameters and identifies the type of sndobj (which is pretty important
+            right now since i only have one control to rule them all). I plan on refactoring various parts of the code and trying to abstract out everything correctly for easy expansion into all sndobj's as well as make it easy to
+            implement new custom controls with ease. Also on the agenda is to simply disable physics if pybox2d is not setup so that it can run standalone with just sndobj if necessary. Once these two things are done, im going to make
+            a code release (Probably licensed GPL, only other consideration being something like bsd/mit/zlib style).
+            
+	    <br/><br/><a href="http://vizi.dasa.cc/vizi2.mp4">Watch the New Video</a> (Makes annoying sound towards end, either dont watch the whole thing or get ready to turn your speakers down a touch)</p>
+	    <br/><p>
+            <div><em>May 24, 2009</em></div>
+        First efforts towards a vision I have. I'm using sndobj and box2d with python. I shot a video for demonstration purposes. You might want to turn down the volume on your speakers. The demonstration makes use of Oscili's so it can be a bit hard to listen to at times. The physics engine can be paused to make things easier to manage or keep the sound playing. In the video, the rotation of the circle is tied to the frequency of the oscili.
+        
+	<br/><br/><a href="http://vizi.dasa.cc/vizi.mp4">Watch the Video</a></p>
+    </div></div>
+        <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+        </script>
+        <script type="text/javascript">
+        try {
+            var pageTracker = _gat._getTracker("UA-8990424-1");
+            pageTracker._trackPageview();
+            } catch(err) {}</script>
+    </body>
+</html>
