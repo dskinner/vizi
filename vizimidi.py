@@ -55,6 +55,7 @@ class ViziMidiFreq(object):
         
         
 #  Global Array
+
 midi_map = []
 
 class ViziMidiEvents(object):
