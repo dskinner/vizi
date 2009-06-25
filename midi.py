@@ -255,6 +255,40 @@ class MidiEvent:
         else:
             raise "unknown midi event type: " + self.type
 
+    def DoProcess(self, last_tick):
+        if self.type == 'DeltaTime':
+            return last_tick + self.time    
+        elif event_type == 'NOTE_ON':
+            for my_map in midi_map:
+                if self.track.index != my_map.track:
+                    pass
+                elif self.channel != my_map.channel:
+                    pass
+                elif self.pitch != my_map.pitch:
+                    pass
+                elif self.velocity == 0:
+                    my_map.note_off()
+                else:
+                    my_map.note_on(self.velocity)
+            return last_tick
+        elif event_type == 'NOTE_OFF':
+            for my_map in midi_map:
+                if self.track.index != my_map.track:
+                    pass
+                elif self.channel != my_map.channel:
+                    pass
+                elif self.pitch != my_map.pitch:
+                    pass
+                else:
+                    my_map.note_off()
+            return last_tick
+        else:
+            return last_tick
+        
+    def vizi_list(self, vizi):
+        vizi.append([self.type, self.track.index, self.time, self.channel, self.pitch, self.velocity, self.data])
+
+
 """
 register_note() is a hook that can be overloaded from a script that
 imports this module. Here is how you might do that, if you wanted to
@@ -271,6 +305,7 @@ midi.register_note = register_note
 def register_note(track_index, channel_index, pitch, velocity,
                   keyDownTime, keyUpTime):
     pass
+
 
 class MidiChannel:
 
@@ -298,6 +333,7 @@ class MidiChannel:
         # The case where the pitch isn't in the dictionary is illegal,
         # I think, but we probably better just ignore it.
 
+
 class DeltaTime(MidiEvent):
 
     type = "DeltaTime"
@@ -310,6 +346,7 @@ class DeltaTime(MidiEvent):
         str = putVariableLengthNumber(self.time)
         return str
 
+
 class MidiTrack:
 
     def __init__(self, index):
@@ -319,7 +356,9 @@ class MidiTrack:
         self.length = 0
         for i in range(16):
             self.channels.append(MidiChannel(self, i+1))
-
+        self.next_tick = 0
+        self.next_event_index = 0
+        
     def read(self, str):
         time = 0
         assert str[:4] == "MTrk"
@@ -351,6 +390,32 @@ class MidiTrack:
             r = r + "    " + `e` + "\n"
         return r + "  >"
 
+    def Restart(self, restart_tick):
+        self.next_tick = restart_tick
+        self.next_event_index = 0
+        for i, e in enumerate(self.events):
+            if e.time >= self.next_tick:
+                self.next_event_index = i
+                break
+            
+    def DoProcess(self, tick_counter): # on each track will determine if it is time to process next element
+        ret_value = False
+        count_events = len(self.events)
+        while tick_counter <= self.next_tick:
+            if self.next_event_index < count_events:
+                self.next_tick = events[self.next_event_index].DoProcess(next_tick)
+                self.next_event_index += 1
+                return True
+            else:
+                ret_value = False
+                break
+        return ret_value
+
+    def vizi_list(self, vizi):
+        for e in self.events:
+            e.vizi_list(vizi)
+            
+            
 class MidiFile:
 
     def __init__(self):
@@ -417,7 +482,12 @@ class MidiFile:
         for trk in self.tracks:
             str = str + trk.write()
         return str
-
+    
+    def vizi_list(self, vizi):
+        for trk in self.tracks:
+            trk.vizi_list(vizi)
+            
+            
 def main(argv):
     global debugflag
     import getopt
