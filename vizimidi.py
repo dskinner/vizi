@@ -55,6 +55,7 @@ class ViziMidiFreq(object):
         
         
 #  Global Array
+
 midi_map = []
 
 class ViziMidiEvents(object):
@@ -89,7 +90,7 @@ class ViziMidiEvents(object):
 class ViziMidiTracks(object):
     def __init__(self):
         self.my_midiEvents = []
-        self.count_events
+        self.count_events = 0
         self.next_tick = 0
         self.next_event_index = 0
     
@@ -114,6 +115,9 @@ class ViziMidiTracks(object):
 
 
 class ViziMidiFile(object):
+    def AddNote(self, e):
+        print e
+        
     def __init__(self, infile):
         self.my_tracks = []  #read from file
         self.my_midiMap = [] # matches MidiSndObj.note_event() with NoteEvents  
@@ -125,7 +129,14 @@ class ViziMidiFile(object):
         self.m.open(infile)
         self.m.read()
         self.m.close()
-    
+        note_list = []
+        self.m.vizi_list(note_list)
+        self.count_tracks = len(self.m.tracks)
+        for i in range(self.count_tracks):
+            self.my_tracks.append(ViziMidiTracks())
+        for e in note_list:
+            print e
+            
     def __repr__(self):
         return `self.__dict__`
     
@@ -272,7 +283,7 @@ if __name__ == '__main__':
             thread.AddObj(x)
         thread.AddObj(outp, sndobj.SNDIO_OUT)
  
-        #testViziMidi = ViziMidiFile("ISawHerStandingThere.mid")
+        testViziMidi = ViziMidiFile("ISawHerStandingThere.mid")
        
         print "Begin Playing song"
         myTime = 0.0
