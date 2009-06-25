@@ -57,6 +57,9 @@ class SoundObject(object):
         self.in_mixer = True
     
     def draw_waveform(self):
+        if not hasattr(self, 'popout'):
+            return
+        
         x, y = self.body.position.x, self.body.position.y
         
         if self.output is not None:
@@ -207,6 +210,9 @@ class Orb2(SoundObject):
         # create physics body
         self.init_body(position)
         
+        # update physics body based on control value
+        self.map_physics = {'orange rotation': 'body angle'}
+        
         # useful for debugging during draw
         '''
         self.vertices = create_circle_vertices(16, self.circle_def().radius)
@@ -228,11 +234,10 @@ class Orb2(SoundObject):
     
     def draw(self):
         x, y = self.body.position.x, self.body.position.y
-        angle = degrees(self.body.angle)
         
         self.base.draw(x, y)
         if self.orange: # for handling disabled orange controls in some subclasses, for now
-            self.orange.draw(x, y, angle)
+            self.orange.draw(x, y)
         if self.blue:
             self.blue.draw(x, y)
         self.center.sprite.set_position(x, y)
@@ -252,7 +257,13 @@ class Orb2(SoundObject):
     def mouse_drag(self, x, y, dx, dy, symbol, modifiers):
         if hasattr(self.active_control, 'mouse_drag'):
             self.active_control.mouse_drag(x, y, dx, dy, symbol, modifiers, self.body)
-    
+        
+        for k, v in self.map_physics.items():
+            k = k.split()
+            v = v.split()
+            if hasattr(self, v[0]):
+                setattr(getattr(self, v[0]), v[1], -radians(getattr(getattr(self, k[0]), k[1])))
+            
     def get_control(self, x, y):
         # read pixels
         pixels = [0., 0., 0., 0.]
@@ -271,6 +282,13 @@ class Orb2(SoundObject):
             return self.blue
         elif alpha > .05:
             return self.base
+    
+    def update(self, dt):
+        for k, v in self.map_physics.items():
+            k = k.split()
+            v = v.split()
+            if hasattr(self, k[0]):
+                setattr(getattr(self, k[0]), k[1], -degrees(getattr(getattr(self, v[0]), v[1])))
     
     def hit_test(self, x, y):
         x2, y2 = self.body.position.x, self.body.position.y

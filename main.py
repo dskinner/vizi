@@ -62,6 +62,7 @@ class Menu(object):
  FFT
  Filter
  Gain
+ HarmTable
  HiPass
  Hilb
  IFFT

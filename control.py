@@ -164,9 +164,9 @@ class Orange(ControlRotate):
         self.image.anchor_y = 6
         self.sprite = pyglet.sprite.Sprite(self.image, batch=batch, group=group)
     
-    def draw(self, x, y, angle):
+    def draw(self, x, y):
         self.sprite.set_position(x, y)
-        self.sprite.rotation = angle
+        self.sprite.rotation = self.rotation
     
     def adjust_angle(self, r, body):
         diff = self.history[-1] - self.history[-2]
@@ -174,7 +174,8 @@ class Orange(ControlRotate):
             diff += 360
         elif diff >= 180:
             diff -= 360
-        body.angle += radians(diff)
+        self.rotation += diff
+        #body.angle += radians(diff)
 
 
 class MultiConnect(ControlDecorative):

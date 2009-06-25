@@ -187,6 +187,31 @@ class Gain(Orb2):
         self.snd.PopOut(self.popout[0:self.snd.GetVectorSize()])
 
 
+class HarmTable(Orb2):
+    def __init__(self, *args, **kwargs):
+        super(HarmTable, self).__init__(*args, **kwargs)
+        self.table = sndobj.HarmTable(1024, 1, sndobj.SINE)
+        self.orange.rotation = 1
+        self.blue.rotation = 1
+        
+        self.infobox = ''' {color (255,255,255,255)}{bold True}Table Length: \n Harmonics: \n {font_name 'Flotsam smart'}{bold False}HarmTable'''
+        
+        self.history = [1, 1]
+    
+    def update(self, dt):
+        print self.orange.rotation
+        harm = int(self.orange.rotation)
+        phase = int(self.blue.rotation)
+        if self.hovering:
+            self.update_infobox([harm, phase])
+        
+        if not [harm, phase] == self.history:
+            self.table.SetHarm(harm, sndobj.SINE)
+            self.table.SetPhase(phase)
+            self.table.MakeTable()
+            self.history = [harm, phase]
+
+
 class Hilb(Orb2):
     def __init__(self, *args, **kwargs):
         super(Hilb, self).__init__(*args, **kwargs)
@@ -336,6 +361,8 @@ class Oscili(Orb2):
         self.popout = numpy.zeros(self.snd.GetVectorSize(), dtype='float32')
     
     def update(self, dt):
+        super(Oscili, self).update(dt)
+        
         frequency = determine_constrained_value(min=0, max=940, \
             val=abs(degrees(self.body.angle)))
         amplitude = abs(self.blue.rotation)
