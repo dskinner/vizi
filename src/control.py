@@ -23,9 +23,11 @@ Created on May 31, 2009
 @author: daniel
 @todo: review approach to diff's
 '''
+from __future__ import division
 from math import atan2, degrees, radians, sqrt, sin, cos
 import pyglet
 from pyglet.gl import *
+from PyQt4.QtGui import QPixmap
 
 from utils import *
 
@@ -42,7 +44,9 @@ class ControlPosition(object):
         '''used by subclass to perform action to adjust position'''
         pass
     
-    def mouse_drag(self, x, y, dx, dy, symbols, modifiers, body):
+    def mouse_drag(self, event, body):
+        x, y = event.x(), event.y()
+        dx, dy = 2, 2
         self.adjust_position(dx, dy, body)
 
 
@@ -56,7 +60,8 @@ class ControlRotate(object):
         '''used by subclasses to determine what to do on angle change'''
         pass
     
-    def mouse_press(self, x, y, symbol, modifiers, body):
+    def mouse_press(self, event, body):
+        x, y = event.x(), event.y()
         '''provides initial data in history for comparative operators later'''
         x2, y2 = body.position.x, body.position.y
         
@@ -89,40 +94,41 @@ class ControlRotate(object):
 
 
 class Base(ControlPosition):
-    image = pyglet.image.load('res/orb2_base.png')
+    pixmap = QPixmap('res/orb2_base.png')
     
-    def __init__(self, batch, group):
+    def __init__(self):
         super(Base, self).__init__()
-        w, h = self.image.width, self.image.height
-        self.image.anchor_x = int(w/2)
-        self.image.anchor_y = int(h/2)
-        self.sprite = pyglet.sprite.Sprite(self.image, batch=batch, group=group)
     
     def adjust_position(self, dx, dy, body):
         x, y = body.position.x, body.position.y
         body.position = (x+dx, y+dy)
     
-    def draw(self, x, y):
-        self.sprite.set_position(x, y)
+    def draw(self, painter, x, y):
+        w, h = self.pixmap.width(), self.pixmap.height()
+        painter.save()
+        painter.translate(x-(w/2), y-(h/2))
+        painter.drawPixmap(0, 0, self.pixmap)
+        painter.restore()
 
 
 class MixerBase(Base):
-    image = pyglet.image.load('res/orb_white_sm.png')
+    pixmap = QPixmap('res/orb_white_sm.png')
 
 
 class Blue(ControlRotate):
-    image = pyglet.image.load('res/orb2_blue_control.png')
+    pixmap = QPixmap('res/orb2_blue_control.png')
     
-    def __init__(self, batch, group):
+    def __init__(self):
         super(Blue, self).__init__()
-        self.image.anchor_x = 6
-        self.image.anchor_y = 6
-        self.sprite = pyglet.sprite.Sprite(self.image, batch=batch, group=group)
-        self.rotation = -180
+        # 6px blur
     
-    def draw(self, x, y):
-        self.sprite.set_position(x, y)
-        self.sprite.rotation = self.rotation
+    def draw(self, painter, x, y):
+        w, h = self.pixmap.width(), self.pixmap.height()
+        painter.save()
+        painter.translate(x-(w/2), y-(h/2))
+        #painter.rotate(self.rotation)
+        painter.drawPixmap(0, 0, self.pixmap)
+        painter.restore()
 
     def adjust_angle(self, r, body):
         diff = self.history[-1] - self.history[-2]
@@ -134,39 +140,33 @@ class Blue(ControlRotate):
 
 
 class Center(ControlDecorative):
-    image = pyglet.image.load('res/orb2_center.png')
+    pixmap = QPixmap('res/orb2_center.png')
     
-    def __init__(self, batch, group):
+    def __init__(self):
         super(Center, self).__init__()
-        w, h = self.image.width, self.image.height
-        self.image.anchor_x = int(w/2)
-        self.image.anchor_y = int(h/2)
-        self.sprite = pyglet.sprite.Sprite(self.image, batch=batch, group=group)
 
 
 class Center2(ControlDecorative):
-    image = pyglet.image.load('res/orb2_center2.png')
+    pixmap = QPixmap('res/orb2_center2.png')
     
-    def __init__(self, batch, group):
+    def __init__(self):
         super(Center2, self).__init__()
-        w, h = self.image.width, self.image.height
-        self.image.anchor_x = int(w/2)
-        self.image.anchor_y = int(h/2)
-        self.sprite = pyglet.sprite.Sprite(self.image, batch=batch, group=group)
 
 
 class Orange(ControlRotate):
-    image = pyglet.image.load('res/orb2_orange_control.png')
+    pixmap = QPixmap('res/orb2_orange_control.png')
     
-    def __init__(self, batch, group):
+    def __init__(self):
         super(Orange, self).__init__()
-        self.image.anchor_x = 6
-        self.image.anchor_y = 6
-        self.sprite = pyglet.sprite.Sprite(self.image, batch=batch, group=group)
+        # 6px blur
     
-    def draw(self, x, y):
-        self.sprite.set_position(x, y)
-        self.sprite.rotation = self.rotation
+    def draw(self, painter, x, y):
+        w, h = self.pixmap.width(), self.pixmap.height()
+        painter.save()
+        painter.translate(x-(w/2), y-(h/2))
+        #painter.rotate(self.rotation)
+        painter.drawPixmap(0, 0, self.pixmap)
+        painter.restore()
     
     def adjust_angle(self, r, body):
         diff = self.history[-1] - self.history[-2]

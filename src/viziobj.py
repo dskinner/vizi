@@ -360,8 +360,8 @@ class Oscili(Orb2):
         
         self.popout = numpy.zeros(self.snd.GetVectorSize(), dtype='float32')
     
-    def update(self, dt):
-        super(Oscili, self).update(dt)
+    def update(self):
+        super(Oscili, self).update()
         
         frequency = determine_constrained_value(min=0, max=940, \
             val=abs(degrees(self.body.angle)))

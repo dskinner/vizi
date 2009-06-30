@@ -50,10 +50,9 @@ from utils import *
 from viziobj import *
 from window import *
 import space
+import options
 
-#world.add_body(Oscili((150, 150)))
 
-######
 class Menu(object):
     def __init__(self):
         self._text = '''{color (255,255,255,255)}{bold True}{font_size 10} ADSR
