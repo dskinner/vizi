@@ -58,61 +58,6 @@ class ViziMidiFreq(object):
 
 midi_map = []
 
-class ViziMidiEvents(object):
-    def __init__(self, event_type, my_tick, track, channel = 0, pitch = 0, velocity = 0):
-        self.event_type = event_type
-        self.my_tick = my_tick
-        self.track = track
-        self.channel = channel
-        self.pitch = pitch
-        self.velocity = velocity
-
-    def DoProcess(self, last_tick):
-        if self.event_type == delta_time:
-            return last_tick + self.my_tick    
-        elif event_type == NOTE_ON:
-            if self.my_tick > last_tick:
-                return self.my_tick
-            else:
-                for my_map in midi_map:
-                    if self.track != my_map.track:
-                        pass
-                    elif self.channel != my_map.channel:
-                        pass
-                    elif self.pitch != my_map.pitch:
-                        pass
-                    elif self.velocity == 0:
-                        my_map.note_off()
-                    else:
-                        my_map.note_on()
-                        
-
-class ViziMidiTracks(object):
-    def __init__(self):
-        self.my_midiEvents = []
-        self.count_events = 0
-        self.next_tick = 0
-        self.next_event_index = 0
-    
-    def Append(self, this_event):
-        self.my_midiEvents.append(this_event)
-        self.count_events += 1
-        
-    def Restart(self, restart_tick):
-        self.next_tick = restart_tick
-        self.next_event_index = 0
-        
-    def DoProcess(self, tick_counter): # on each track will determine if it is time to process next element
-        ret_value = False
-        while tick_counter <= next_tick:
-            if next_event_index < self.count_events:
-                next_tick = my_midiEvent[next_event_index].DoProcess(next_tick)
-                next_event_index += 1    
-            else:
-                ret_value = False
-                break
-        return ret_value
-
 
 class ViziMidiFile(object):
     def AddNote(self, e):
@@ -129,13 +74,6 @@ class ViziMidiFile(object):
         self.m.open(infile)
         self.m.read()
         self.m.close()
-        note_list = []
-        self.m.vizi_list(note_list)
-        self.count_tracks = len(self.m.tracks)
-        for i in range(self.count_tracks):
-            self.my_tracks.append(ViziMidiTracks())
-        for e in note_list:
-            print e
             
     def __repr__(self):
         return `self.__dict__`
@@ -195,7 +133,9 @@ class ViziPluck(sndobj.Pluck):
     
     def note_on(self, velocity):
         #self.Enable()
-        self.SetAmp(velocity * 32767 / 128)
+        #self.SetAmp(velocity * 32767 / 128)
+        self.SetAmp(velocity, 128)
+        self.RePluck()
 
     def note_off(self):
         pass#self.Disable()
@@ -236,7 +176,7 @@ if __name__ == '__main__':
                 doit.append(osc)
         
                 #  ADSR(attackTime,maxAmp,decayTime,sustainAmp,releaseTime,durationTime,InObj)
-                env = ViziADSR(.2, 0.0, .2, .1, .05, 12.0, osc)
+                env = ViziADSR(.2, 0.0, .2, .1, 2.5, 12.0, osc)
                 oboe.append(env)
                 doit.append(env)
                 p = (2.0 * note / (count - 1)) - 1.0
@@ -253,7 +193,7 @@ if __name__ == '__main__':
             for note in range(count):
                 freq = midi_freq.pitch(note)
                 p = (2.0 * note / (count - 1)) - 1.0
-                osc = ViziPluck(freq, 0.)
+                osc = ViziPluck(freq, 32767)
                 harp.append(osc)
                 doit.append(osc)
                 pan = sndobj.Pan(p,osc)
@@ -265,6 +205,7 @@ if __name__ == '__main__':
         import sys
         jack = 'jack' in sys.argv[-1] and True or False
         if not jack:
+            print "Not Jack"
             outp = sndobj.SndRTIO(2, sndobj.SND_OUTPUT)
             outp.SetOutput(1, mixerLeft)
             outp.SetOutput(2, mixerRight)
@@ -304,12 +245,13 @@ if __name__ == '__main__':
         def pluck_harp(dt):
             global strings, string
             #print 'playing harp[%s]' % string
-            harp[string].note_on(.9)
+            harp[string].note_on(127)
             string += 1
             if string >= strings:
                 string = 0
+                print "Play it again Sam"
         
-        clock.schedule_interval(pluck_harp, .1)
+        clock.schedule_interval(pluck_harp, .2)
         pyglet.app.run() # main loop
         
         '''

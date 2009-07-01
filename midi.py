@@ -403,7 +403,7 @@ class MidiTrack:
         count_events = len(self.events)
         while tick_counter <= self.next_tick:
             if self.next_event_index < count_events:
-                self.next_tick = events[self.next_event_index].DoProcess(next_tick)
+                self.next_tick = events[self.next_event_index].DoProcess(self.next_tick)
                 self.next_event_index += 1
                 return True
             else:
@@ -424,6 +424,10 @@ class MidiFile:
         self.tracks = [ ]
         self.ticksPerQuarterNote = None
         self.ticksPerSecond = None
+        self.tempo = 120
+        self.each_time = (60.0 / self.tempo) / 96.0
+        self.next_time = 0.0
+        self.tick_counter = 0
 
     def open(self, filename, attrib="rb"):
         if filename == None:
@@ -482,7 +486,25 @@ class MidiFile:
         for trk in self.tracks:
             str = str + trk.write()
         return str
-    
+
+    def Restart(self, restart_tick = 0):
+        for trk in self.tracks:
+            trk.Restart(restart_tick)
+        self.tick_counter = restart_tick
+        # self.each_time = some formula to do
+        self.next_time = restart_tick * self.each_time
+  
+    def DoProcess(self, this_time): # increments the tick counter when the time is right
+        if self.next_time >= this_time:
+            return True
+        else:
+            ret_value = 0
+            self.next_time += self.each_time
+            self.tick_counter += 1
+            for trk in self.tracks:
+                ret_value += trk.DoProcess(self.tick_counter)
+            return ret_value
+  
     def vizi_list(self, vizi):
         for trk in self.tracks:
             trk.vizi_list(vizi)
