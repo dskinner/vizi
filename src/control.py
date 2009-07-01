@@ -28,7 +28,7 @@ from math import atan2, degrees, radians, sqrt, sin, cos
 import pyglet
 from pyglet.gl import *
 from PyQt4.QtGui import QPixmap
-
+from qtwindow import *
 from utils import *
 
 class ControlDecorative(object):
@@ -44,9 +44,10 @@ class ControlPosition(object):
         '''used by subclass to perform action to adjust position'''
         pass
     
-    def mouse_drag(self, event, body):
+    def mouse_move(self, event, body):
         x, y = event.x(), event.y()
-        dx, dy = 2, 2
+        x2, y2 = window.last_pos
+        dx, dy = x-x2, y-y2
         self.adjust_position(dx, dy, body)
 
 
@@ -66,18 +67,19 @@ class ControlRotate(object):
         x2, y2 = body.position.x, body.position.y
         
         # calculate angle from center of orb to mouse
-        r = degrees(atan2(x-x2, y-y2))
+        r = -degrees(atan2(x-x2, y-y2))
         
         # adjust and clip history
         self.history.append(r)
         self.history = self.history[-2:]
     
-    def mouse_drag(self, x, y, dx, dy, symbols, modifiers, body):
+    def mouse_move(self, event, body):
+        x, y = event.x(), event.y()
         h = self.history
         x2, y2 = body.position.x, body.position.y
         
         # calculate angle from center of orb to mouse
-        r = degrees(atan2(x-x2, y-y2))
+        r = -degrees(atan2(x-x2, y-y2))
         
         # counting revolutions
         if self.history[-1] > -134 and r < 44:
@@ -100,6 +102,7 @@ class Base(ControlPosition):
         super(Base, self).__init__()
     
     def adjust_position(self, dx, dy, body):
+        print dx, dy
         x, y = body.position.x, body.position.y
         body.position = (x+dx, y+dy)
     
@@ -125,8 +128,9 @@ class Blue(ControlRotate):
     def draw(self, painter, x, y):
         w, h = self.pixmap.width(), self.pixmap.height()
         painter.save()
-        painter.translate(x-(w/2), y-(h/2))
-        #painter.rotate(self.rotation)
+        painter.translate(x, y)
+        painter.rotate(self.rotation)
+        painter.translate(-6, -6)
         painter.drawPixmap(0, 0, self.pixmap)
         painter.restore()
 
@@ -144,6 +148,13 @@ class Center(ControlDecorative):
     
     def __init__(self):
         super(Center, self).__init__()
+    
+    def draw(self, painter, x, y):
+        w, h = self.pixmap.width(), self.pixmap.height()
+        painter.save()
+        painter.translate(x-(w/2), y-(h/2))
+        painter.drawPixmap(0, 0, self.pixmap)
+        painter.restore()
 
 
 class Center2(ControlDecorative):
@@ -163,8 +174,9 @@ class Orange(ControlRotate):
     def draw(self, painter, x, y):
         w, h = self.pixmap.width(), self.pixmap.height()
         painter.save()
-        painter.translate(x-(w/2), y-(h/2))
-        #painter.rotate(self.rotation)
+        painter.translate(x, y)
+        painter.rotate(self.rotation)
+        painter.translate(-6, -6)
         painter.drawPixmap(0, 0, self.pixmap)
         painter.restore()
     
@@ -175,7 +187,6 @@ class Orange(ControlRotate):
         elif diff >= 180:
             diff -= 360
         self.rotation += diff
-        #body.angle += radians(diff)
 
 
 class MultiConnect(ControlDecorative):

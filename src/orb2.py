@@ -61,7 +61,6 @@ class SoundObject(object):
             return
         
         painter.save()
-        '''
         x, y = self.body.position.x, self.body.position.y
         
         if self.output is not None:
@@ -92,18 +91,15 @@ class SoundObject(object):
         
         vertices[0:-1:2] = self.popout
         
-        glPushMatrix()
-        glTranslatef(x, y, 0)
+        painter.translate(x, y)
         #determine angle from current orb to master and rotate as such
         r = -degrees(atan2(x2-x, y2-y))
-        glRotatef(r, 0, 0, 1)
+        painter.rotate(r)
         
         pyglet.graphics.draw(length, pyglet.gl.GL_LINE_STRIP,
             ('v2f', list(vertices)),
 	    ('c3B', (255,255,255)*length)
         )
-        glPopMatrix()
-        '''
         painter.restore()
     
     @property
@@ -244,7 +240,7 @@ class Orb2(SoundObject):
             self.orange.draw(painter, x, y)
         if self.blue:
             self.blue.draw(painter, x, y)
-        #self.center.sprite.set_position(x, y)
+        self.center.draw(painter, x, y)
         '''
         if self.in_mixer:
             self.center.sprite.color = (255, 255, 255)
@@ -254,16 +250,17 @@ class Orb2(SoundObject):
         
     def mouse_press(self, event):
         x, y = event.x(), event.y()
+        print 'calling get_control'
         self.active_control = self.get_control(x, y)
         if hasattr(self.active_control, 'mouse_press'):
-            self.active_control.mouse_press(event)
+            self.active_control.mouse_press(event, self.body)
     
     def mouse_release(self, x, y, symbol, modifiers):
         self.active_control = None
     
-    def mouse_drag(self, x, y, dx, dy, symbol, modifiers):
-        if hasattr(self.active_control, 'mouse_drag'):
-            self.active_control.mouse_drag(x, y, dx, dy, symbol, modifiers, self.body)
+    def mouse_move(self, event):
+        if hasattr(self.active_control, 'mouse_move'):
+            self.active_control.mouse_move(event, self.body)
         
         for k, v in self.map_physics.items():
             k = k.split()
@@ -273,10 +270,12 @@ class Orb2(SoundObject):
             
     def get_control(self, x, y):
         # read pixels
+        ww, wh = window.width(), window.height()
         pixels = [0., 0., 0., 0.]
         rgba = (GLfloat*len(pixels))(*pixels)
-        glReadPixels(x, y, 1, 1, GL_RGBA, GL_FLOAT, rgba)
+        glReadPixels(x, wh-y, 1, 1, GL_RGBA, GL_FLOAT, rgba)
         red, green, blue, alpha = rgba[0], rgba[1], rgba[2], rgba[3]
+        print red, green, blue, alpha
         
         # determine control clicked by color
         if .55 < red < .88 and \
@@ -290,7 +289,7 @@ class Orb2(SoundObject):
         elif alpha > .05:
             return self.base
     
-    def update(self):
+    def update(self, dt):
         for k, v in self.map_physics.items():
             k = k.split()
             v = v.split()

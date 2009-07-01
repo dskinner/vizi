@@ -99,7 +99,7 @@ class Master(object):
         
         self.circle_def = b2CircleDef()
         self.circle_def.friction = 0.9
-        self.circle_def.radius = (self.pixmap.width()/2)-13
+        self.circle_def.radius = (self.pixmap.width()/2/2)-13
         self.circle = self.body.CreateShape(self.circle_def)
         
         self.inputs = []
@@ -196,6 +196,8 @@ class Space(object):
     
     def draw(self, painter):
         for body in self.bodies:
+            if hasattr(body, 'draw_waveform'):
+                body.draw_waveform(painter)
             if hasattr(body, 'draw'):
                 body.draw(painter)
         
@@ -213,9 +215,9 @@ class Space(object):
         
         #self.label.draw()
     
-    def update(self):
+    def update(self, dt):
         if self.step:
-            self.world.Step(1/60, 10, 8)
+            self.world.Step(1/60., 10, 8)
         
         for body in self.bodies:
             if hasattr(body, 'destroy') and body.destroy:
@@ -297,7 +299,7 @@ class Space(object):
                         body.body.WakeUp()
                     else:
                         if hasattr(body, 'mouse_press'):
-                            body.mouse_press(x, y, symbol, modifiers)
+                            body.mouse_press(event)
                         body.mouseJoint = True
         if event.buttons() & QtCore.Qt.RightButton:
             for body in self.bodies:
@@ -305,8 +307,9 @@ class Space(object):
                     # prepare to relink to something else
                     body.linking = True
     
-    def on_mouse_release(self, x, y, symbol, modifiers):
-        if symbol == mouse.LEFT:
+    def mouse_release(self, event):
+        x, y = event.x(), event.y()
+        if int(event.button()) == int(QtCore.Qt.LeftButton):
             for body in self.bodies:
                 if hasattr(body, 'mouseJoint') and body.mouseJoint:
                     if self.step:
@@ -316,7 +319,7 @@ class Space(object):
                         body.mouseJoint = False
                         if hasattr(body, 'control') and body.control is not None:
                             body.control = None
-        if symbol == mouse.RIGHT:
+        if int(event.button()) == int(QtCore.Qt.RightButton):
             linking = []
             dest = None
             for body in self.bodies:
@@ -356,7 +359,7 @@ class Space(object):
                     body.mouseJoint.SetTarget((x, y))
                 else:
                     if hasattr(body, 'active_control') and body.active_control is not None:
-                        body.mouse_drag(x, y, dx, dy, symbol, modifiers)
+                        body.mouse_move(event)
     
     def on_mouse_motion(self, x, y, dx, dy):
         for body in self.bodies:
