@@ -3,7 +3,8 @@
 import os
 import sys
 
-from PyQt4 import QtCore, QtGui, QtOpenGL
+from PyQt4 import QtCore, QtGui, QtOpenGL, uic
+from PyQt4.QtCore import *
 from PyQt4.QtOpenGL import *
 
 from pyglet.gl import *
@@ -11,45 +12,55 @@ import pyglet
 
 from sound import *
 
-from objmenu import Ui_Form
+class Button(QtGui.QPushButton):
+    def __init__(self, *args):
+        super(Button, self).__init__(*args)
+        self.setGeometry(10, 100, 100, 25)
+    
+    def mousePressEvent(self, event):
+        import space
+        from viziobj import Oscili
+        super(Button, self).mousePressEvent(event)
+        #space.manage.active.add_body(Oscili(position=(150, 150)))
+        window.menu._menu.tab.show()
 
-class MyForm(QGLWidget):
-    def __init__(self, parent=None):
-        super(MyForm, self).__init__(QtOpenGL.QGLFormat(QtOpenGL.QGL.SampleBuffers), parent)
-        self.setAutoFillBackground(False)
-        self.ui = Ui_Form()
-        self.ui.setupUi(self)
+
+class Events(QtCore.QObject):
+    def mouse_press(self, bool):
+        print 'event: ', bool
+
+
+class List(QtGui.QListWidget):
+    def __init__(self, *args):
+        super(List, self).__init__(*args)
+        self.setGeometry(10, 150, 175, 300)
+
+
+class Menu(QtGui.QTabWidget):
+    def __init__(self, *args):
+        super(Menu, self).__init__(*args)
+        self._menu = uic.loadUi('menu.ui', self)
+        self.connect(self._menu.listWidget, SIGNAL('clicked(QModelIndex)'), \
+                     self.clicked)
     
-    def initializeGL(self):
-        glClearColor(0., 0., 0., 1.)
-        glEnable(GL_BLEND)
-        glEnable(GL_LINE_SMOOTH)
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-    
-    def paintEvent(self, event):
-        self.makeCurrent()
-        painter = QtGui.QPainter(self)
-        painter.end()
-    
-    def animate(self):
-        self.update()
-    
-    def resizeGL(self, width, height):
-        glViewport(0, 0, width, height)
-        self.updateGL()
+    def clicked(self, index):
+        print 'index:', index.data().toString()
 
 
 class GLWidget(QGLWidget):
     def __init__(self, parent=None):
         super(GLWidget, self).__init__(QtOpenGL.QGLFormat(QtOpenGL.QGL.SampleBuffers), parent)
         self.setGeometry(10, 10, 800, 600)
-        self.my_form = MyForm(self)
         
+        self.menu = Menu(self)
+        
+        self.button_show= Button('Show Panel', self)
+        self.connect(self.button_show, QtCore.SIGNAL('clicked()'), \
+                     self.menu, QtCore.SLOT('show()'))
         
         self.clock = QtCore.QTimer()
         self.clock.setSingleShot(False)
         self.clock.timeout.connect(self.animate)
-        self.clock.timeout.connect(self.my_form.animate)
         self.clock.start()
         
         self.time = QtCore.QTime()
@@ -62,6 +73,7 @@ class GLWidget(QGLWidget):
         
         self.frames = 0
         self.last_pos = (0, 0)
+        self.dt = 0.00001
     
     def __del__(self):
         sound.thread.ProcOff()
@@ -75,7 +87,8 @@ class GLWidget(QGLWidget):
     def keyPressEvent(self, event):
         import space
         from viziobj import Oscili
-        #space.manage.active.add_body(Oscili(position=(150, 150)))
+        if event.key() == 79:
+            space.manage.active.add_body(Oscili(position=(150, 150)))
         if event.key() == 80:
             space.manage.active.step = not space.manage.active.step
     
@@ -95,10 +108,6 @@ class GLWidget(QGLWidget):
         space.manage.active.mouse_release(event)
     
     def paintEvent(self, event):
-        if (self.frames % 100) is 0:
-            self.time.start()
-            self.frames = 0
-        
         self.makeCurrent()
         
         glClear(GL_COLOR_BUFFER_BIT)
@@ -106,12 +115,10 @@ class GLWidget(QGLWidget):
         painter = QtGui.QPainter(self)
         painter.setRenderHint(QtGui.QPainter.Antialiasing)
         painter.save()
+        
         fps = QtCore.QString()
-        elapsed = self.time.elapsed()
-        if elapsed == 0.0:
-            elapsed = 0.0000001
-        fps.setNum(self.frames/(elapsed/1000.0), 'f', 2)
-        self.dt = self.frames/(elapsed/1000.0)
+        fps.setNum(1./self.dt, 'f', 3)
+        
         painter.setPen(QtGui.QColor('white'))
         painter.drawText(20, 40, fps + " fps")
         painter.restore()
@@ -121,14 +128,16 @@ class GLWidget(QGLWidget):
             handler(painter)
         
         painter.end()
-        
-        self.frames += 1
     
     def resizeGL(self, width, height):
         glViewport(0, 0, width, height)
         self.updateGL()
     
     def animate(self):
+        self.dt = self.time.restart()/1000.
+        if self.dt == 0.0:
+            self.dt = 0.0000001
+            
         for handler in self.update_handlers:
             handler(self.dt)
         self.update()

@@ -217,7 +217,7 @@ class Space(object):
     
     def update(self, dt):
         if self.step:
-            self.world.Step(1/60., 10, 8)
+            self.world.Step(dt*2., 10, 8)
         
         for body in self.bodies:
             if hasattr(body, 'destroy') and body.destroy:

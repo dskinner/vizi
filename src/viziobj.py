@@ -353,8 +353,8 @@ class Oscili(Orb2):
     def __init__(self, *args, **kwargs):
         super(Oscili, self).__init__(*args, **kwargs)
         
-        self.snd = sndobj.Oscili(sound.tab, 0, 9900)
-        self.blue.rotation = 9900
+        self.snd = sndobj.Oscili(sound.tab, 0, 99)
+        self.blue.rotation = 99
         
         self.infobox = ''' {color (255,255,255,255)}{bold True}Frequency: \n Amplitude: \n {font_name 'Flotsam smart'}{bold False}OsCiLi'''
         

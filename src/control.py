@@ -27,7 +27,7 @@ from __future__ import division
 from math import atan2, degrees, radians, sqrt, sin, cos
 import pyglet
 from pyglet.gl import *
-from PyQt4.QtGui import QPixmap
+from PyQt4.QtGui import QPixmap, QWidget
 from qtwindow import *
 from utils import *
 
