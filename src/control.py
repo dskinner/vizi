@@ -28,7 +28,7 @@ from math import atan2, degrees, radians, sqrt, sin, cos
 import pyglet
 from pyglet.gl import *
 from PyQt4.QtGui import QPixmap, QWidget
-from qtwindow import *
+from window import *
 from utils import *
 
 class ControlDecorative(object):

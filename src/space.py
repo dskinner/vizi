@@ -28,6 +28,7 @@ from math import degrees
 import pyglet
 from pyglet.window import key, mouse
 from PyQt4 import QtCore
+from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QPixmap
 try:
     import sndobj
@@ -36,7 +37,7 @@ except:
 
 
 from sound import *
-from qtwindow import *
+from window import *
 
 class BoundingBox(object):
     def __init__(self, world, position, size):
@@ -127,26 +128,9 @@ class Space(object):
     i = 0
     
     def __init__(self):
-        ### label
-        self.label = pyglet.text.Label(text='SPACE {0}'.format(self.i), \
-            color=(255,255,255,255), font_size=14)
         Space.i += 1
-        w1, h1 = window.width(), window.height()
-        w2, h2 = self.label.content_width, self.label.content_height
-        
-        x, y = (w1/2)-(w2/2), h1-h2-10
-        
-        self.label.x = x
-        self.label.y = y
-        ###
         
         self.bodies = []
-        
-        self.batch = pyglet.graphics.Batch()
-        self.layer0 = pyglet.graphics.OrderedGroup(0)
-        self.layer1 = pyglet.graphics.OrderedGroup(1)
-        self.layer2 = pyglet.graphics.OrderedGroup(2)
-        self.layer3 = pyglet.graphics.OrderedGroup(3)
         
         self.mixer = sndobj.Mixer()
         self.default_in = sndobj.SndIn()
@@ -200,20 +184,6 @@ class Space(object):
                 body.draw_waveform(painter)
             if hasattr(body, 'draw'):
                 body.draw(painter)
-        
-        '''
-        for body in self.bodies:
-            if hasattr(body, 'draw_waveform'):
-                body.draw_waveform(painter)
-            if hasattr(body, 'draw'):
-                body.draw(painter)
-        #self.batch.draw()
-        for body in self.bodies:
-            if hasattr(body, 'draw_infobox') and body.hovering:
-                body.draw_infobox(painter)
-        '''
-        
-        #self.label.draw()
     
     def update(self, dt):
         if self.step:
@@ -238,8 +208,8 @@ class Space(object):
                 
                 self.bodies.remove(body)
 
-    def on_key_press(self, symbol, modifiers):
-        if symbol == key.QUOTELEFT:
+    def key_press(self, event):
+        if event.key() == Qt.Key_QuoteLeft:
             for body in self.bodies:
                 if hasattr(body, 'hovering') and body.hovering:
                     if body.processing:
@@ -248,7 +218,7 @@ class Space(object):
                     else:
                         body.snd.Enable()
                         body.processing = True
-        if symbol == key.ASCIITILDE:
+        if event.key() == Qt.Key_AsciiTilde:
             for body in self.bodies:
                 if hasattr(body, 'hovering') and body.hovering:
                     if body.in_mixer:
@@ -257,20 +227,20 @@ class Space(object):
                     else:
                         self.mixer.AddObj(body.snd)
                         body.in_mixer = True
-        if symbol == key.F11:
+        if event.key() == Qt.Key_F11:
             window.set_fullscreen(not window.fullscreen)
-        if symbol == key.P:
+        if event.key() == Qt.Key_P:
             self.step = not self.step
-        if symbol == key.DELETE:
+        if event.key() == Qt.Key_Delete:
             for body in self.bodies:
                 if hasattr(body, 'hovering') and body.hovering:
                     body.destroy = True
-        if symbol == key.K:
+        if event.key() == Qt.Key_K:
             self.pan_val -= 1
             self.pan.SetPan((self.pan_val/10)+.01)
             print 'set pan to: ', (self.pan_val/10)+.01
             print self.pan.GetError()
-        if symbol == key.L:
+        if event.key() == Qt.Key_L:
             self.pan_val += 1
             self.pan.SetPan((self.pan_val/10)-.01)
             print 'set pan to: ', (self.pan_val/10)-.01
@@ -360,9 +330,7 @@ class Space(object):
                 else:
                     if hasattr(body, 'active_control') and body.active_control is not None:
                         body.mouse_move(event)
-    
-    def on_mouse_motion(self, x, y, dx, dy):
-        for body in self.bodies:
+            
             if hasattr(body, 'hit_test') and body.hit_test(x, y):
                 pixels = [0.]
                 alpha = (GLfloat*len(pixels))(*pixels)
@@ -370,6 +338,7 @@ class Space(object):
                 if alpha[0] > .05:
                     body.hovering = True
             elif hasattr(body, 'hit_test') and hasattr(body, 'hovering') and body.hovering is True:
+                print 'setting false'
                 body.hovering = False
 
 

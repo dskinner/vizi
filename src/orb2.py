@@ -42,8 +42,10 @@ from pyglet.gl import *
 import b2
 import control
 from utils import *
-from qtwindow import *
+from window import *
 import space
+
+from PyQt4 import QtGui
 
 class SoundObject(object):
     def __init__(self):
@@ -101,54 +103,6 @@ class SoundObject(object):
 	    ('c3B', (255,255,255)*length)
         )
         painter.restore()
-    
-    @property
-    def infobox(self):
-        '''uses pyglet attributed text, whitespace makes big difference, refer
-        to viziobj classes for examples'''
-        return self._infobox_layout
-    
-    @infobox.setter
-    def infobox(self, text):
-        self._infobox_document = pyglet.text.decode_attributed(text)
-        self._infobox_layout = pyglet.text.layout.IncrementalTextLayout(self._infobox_document, width=300, height=150, multiline=True)
-        self._infobox_metrics = []
-        for x in range(self._infobox_layout.get_line_count()-1):
-            p = self._infobox_layout.get_position_from_line(x)
-            l = self._infobox_document.get_paragraph_end(p)
-            self._infobox_metrics.append(l-p-1)
-    
-    def update_infobox(self, data):
-        '''update infobox document based on tuple data'''
-        self._infobox_layout.begin_update()
-        for x in reversed(range(self._infobox_layout.get_line_count()-1)):
-            try:
-                w = self._infobox_metrics[x] # word length
-            except Exception as e:
-                print 'error: ', x, e
-                print 'metrics', self._infobox_metrics
-                continue
-            p = self._infobox_layout.get_position_from_line(x)
-            e = self._infobox_document.get_paragraph_end(p+w)
-            self._infobox_document.delete_text(p+w, e)
-            self._infobox_document.insert_text(p+w, str(data[x])+'\n')
-        self._infobox_layout.end_update()
-    
-    def draw_infobox(self):
-        x, y = self.body.position.x, self.body.position.y
-        layout = self._infobox_layout
-        layout.x = x +55
-        layout.y = y -35
-        w, h = layout.content_width+5, layout.content_height+5
-        x, y = layout.x, layout.y+layout.height-h
-        vertices = (x, y, x+w, y, x+w, y+h, x, y+h)
-        pyglet.graphics.draw(4, GL_QUADS,
-            ('v2f', vertices),
-            ('c4B', (38, 39, 41, 240)*4))
-        pyglet.graphics.draw(4, GL_LINE_LOOP,
-            ('v2f', vertices),
-            ('c4B', (255, 255, 255, 240)*4))
-        layout.draw()
     
     def get_output(self):
         return self._output
@@ -259,6 +213,7 @@ class Orb2(SoundObject):
         self.active_control = None
     
     def mouse_move(self, event):
+        print 'hover'
         if hasattr(self.active_control, 'mouse_move'):
             self.active_control.mouse_move(event, self.body)
         
@@ -374,16 +329,16 @@ class OrbMixer(SoundObject):
     def __init__(self, position):
         super(OrbMixer, self).__init__()
         
-        self.base = control.MixerBase(batch=space.manage.active.batch, group=space.manage.active.layer0)
+        self.base = control.MixerBase()
         self.init_body(position)
     
-    def draw(self):
+    def draw(self, painter):
         x, y = self.body.position.x, self.body.position.y
-        self.base.draw(x, y)
+        self.base.draw(painter, x, y)
     
     def hit_test(self, x, y):
         x2, y2 = self.body.position.x, self.body.position.y
-        w, h = self.base.image.width/2, self.base.image.height/2
+        w, h = self.base.pixmap.width()/2, self.base.pixmap.height()/2
         if (x2-w) <= x <= (x2+w) and (y2-h) <= y <= (y2+h):
             return True
         return False
@@ -392,7 +347,7 @@ class OrbMixer(SoundObject):
         self.body_def = b2.BodyDef(position=position)
         self.body = space.manage.active.world.CreateBody(self.body_def())
         
-        self.circle_def = b2.CircleDef(2., (self.base.image.width-30)/2,
+        self.circle_def = b2.CircleDef(2., (self.base.pixmap.width()-30)/2,
                                        0.3, 0.7)
         
         self.body.CreateShape(self.circle_def())
@@ -424,7 +379,7 @@ class OrbMixer(SoundObject):
     
     def hit_test(self, x, y):
         x2, y2 = self.body.position.x, self.body.position.y
-        w, h = self.base.image.width/2, self.base.image.height/2
+        w, h = self.base.pixmap.width()/2, self.base.pixmap.height()/2
         if (x2-w) <= x <= (x2+w) and (y2-h) <= y <= (y2+h):
             return True
         return False
@@ -466,7 +421,7 @@ class Orb3(SoundObject):
         self.body_def = b2.BodyDef(position=position)
         self.body = space.manage.active.world.CreateBody(self.body_def())
         
-        self.circle_def = b2.CircleDef(2., (self.base.image.width-24)/2,
+        self.circle_def = b2.CircleDef(2., (self.base.pixmap.width()-24)/2,
                                        0.3, 0.7)
         
         self.body.CreateShape(self.circle_def())

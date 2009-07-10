@@ -4,7 +4,8 @@ Created on Jun 30, 2009
 @author: daniel
 '''
 from __future__ import division
-from qtwindow import *
+from window import *
+from menu import *
 
 from Box2D import *
 from math import atan, atan2, cos, degrees, pi, sin, sqrt
@@ -21,7 +22,6 @@ from orb2 import *
 from sound import *
 from utils import *
 from viziobj import *
-from qtwindow import *
 import space
 
 

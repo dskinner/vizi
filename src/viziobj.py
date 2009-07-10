@@ -341,8 +341,6 @@ class Mixer(OrbMixer):
         
         self.snd = self.space.mixer
         
-        self.infobox = ''' {color (255,255,255,255)}{font_name 'Flotsam smart'}MiXer'''
-        
         self.popout = numpy.zeros(self.space.mixer.GetVectorSize(), dtype='float32')
     
     def update(self, dt):
@@ -356,8 +354,6 @@ class Oscili(Orb2):
         self.snd = sndobj.Oscili(sound.tab, 0, 99)
         self.blue.rotation = 99
         
-        self.infobox = ''' {color (255,255,255,255)}{bold True}Frequency: \n Amplitude: \n {font_name 'Flotsam smart'}{bold False}OsCiLi'''
-        
         self.popout = numpy.zeros(self.snd.GetVectorSize(), dtype='float32')
     
     def update(self, dt):
@@ -366,9 +362,6 @@ class Oscili(Orb2):
         frequency = determine_constrained_value(min=0, max=940, \
             val=abs(degrees(self.body.angle)))
         amplitude = abs(self.blue.rotation)
-        
-        if self.hovering:
-            self.update_infobox([frequency, amplitude])
         
         self.snd.SetFreq(frequency)
         self.snd.SetAmp(amplitude)

@@ -1,47 +1,49 @@
-# -*- coding: utf-8 -*-
-
-# Form implementation generated from reading ui file 'menu.ui'
-#
-# Created: Wed Jul  8 01:12:24 2009
-#      by: PyQt4 UI code generator 4.5.1
-#
-# WARNING! All changes made in this file will be lost!
-
+from __future__ import division
 from PyQt4 import QtCore, QtGui
 
-class Ui_TabWidget(object):
-    def setupUi(self, TabWidget):
-        TabWidget.setObjectName("TabWidget")
-        TabWidget.resize(267, 322)
-        self.tab = QtGui.QWidget()
-        self.tab.setObjectName("tab")
-        self.listWidget = QtGui.QListWidget(self.tab)
-        self.listWidget.setGeometry(QtCore.QRect(0, 0, 256, 192))
-        self.listWidget.setObjectName("listWidget")
-        QtGui.QListWidgetItem(self.listWidget)
-        QtGui.QListWidgetItem(self.listWidget)
-        QtGui.QListWidgetItem(self.listWidget)
-        self.pushButton = QtGui.QPushButton(self.tab)
-        self.pushButton.setGeometry(QtCore.QRect(130, 220, 96, 24))
-        self.pushButton.setObjectName("pushButton")
-        TabWidget.addTab(self.tab, "")
-        self.tab1 = QtGui.QWidget()
-        self.tab1.setObjectName("tab1")
-        TabWidget.addTab(self.tab1, "")
+import space
+from viziobj import *
+from window import *
 
-        self.retranslateUi(TabWidget)
-        TabWidget.setCurrentIndex(0)
-        QtCore.QMetaObject.connectSlotsByName(TabWidget)
+class ShowMenuButton(QtGui.QPushButton):
+    def __init__(self, *args):
+        super(ShowMenuButton, self).__init__(*args)
+        self.setGeometry(10, 100, 100, 25)
+    
+    def mousePressEvent(self, event):
+        super(ShowMenuButton, self).mousePressEvent(event)
+        menu._menu.tab.show()
 
-    def retranslateUi(self, TabWidget):
-        TabWidget.setWindowTitle(QtGui.QApplication.translate("TabWidget", "TabWidget", None, QtGui.QApplication.UnicodeUTF8))
-        __sortingEnabled = self.listWidget.isSortingEnabled()
-        self.listWidget.setSortingEnabled(False)
-        self.listWidget.item(0).setText(QtGui.QApplication.translate("TabWidget", "Gain", None, QtGui.QApplication.UnicodeUTF8))
-        self.listWidget.item(1).setText(QtGui.QApplication.translate("TabWidget", "Mixer", None, QtGui.QApplication.UnicodeUTF8))
-        self.listWidget.item(2).setText(QtGui.QApplication.translate("TabWidget", "Oscili", None, QtGui.QApplication.UnicodeUTF8))
-        self.listWidget.setSortingEnabled(__sortingEnabled)
-        self.pushButton.setText(QtGui.QApplication.translate("TabWidget", "PushButton", None, QtGui.QApplication.UnicodeUTF8))
-        TabWidget.setTabText(TabWidget.indexOf(self.tab), QtGui.QApplication.translate("TabWidget", "Tab 1", None, QtGui.QApplication.UnicodeUTF8))
-        TabWidget.setTabText(TabWidget.indexOf(self.tab1), QtGui.QApplication.translate("TabWidget", "Tab 2", None, QtGui.QApplication.UnicodeUTF8))
+
+class Menu(QtGui.QTabWidget):
+    def __init__(self, *args):
+        super(Menu, self).__init__(*args)
+        self._menu = uic.loadUi('menu.ui', self)
+        self.connect(self._menu.listWidget, SIGNAL('clicked(QModelIndex)'), \
+                     self.clicked)
+    
+    def clicked(self, index):
+        obj = index.data().toString()
+        space.manage.active.add_body(globals()[str(obj)](position=(150, 150)))
+        print 'index:', obj
+
+
+class SndObjs(QtGui.QFrame):
+    def __init__(self, *args):
+        super(SndObjs, self).__init__(*args)
+        self._sndobjs = uic.loadUi('sndobjs.ui', self)
+        self.connect(self._sndobjs.sndobjs, SIGNAL('clicked(QModelIndex)'), \
+                     self.clicked)
+    
+    def clicked(self, index):
+        obj = index.data().toString()
+        space.manage.active.add_body(globals()[str(obj)](position=(550, 150)))
+        print 'index:', obj
+        
+
+show_menu = ShowMenuButton('Show Menu', window)
+menu = SndObjs(window)
+
+window.connect(show_menu, QtCore.SIGNAL('clicked()'), menu, \
+               QtCore.SLOT('show()'))
 

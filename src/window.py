@@ -1,67 +1,103 @@
-#-----------------------------------------------------------------------------
-#
-#    Copyright (C) 2009  Daniel Skinner
-#
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 2 of the License, or
-#    (at your option) any later version.
-#
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
-#
-#    You should have received a copy of the GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
-#-----------------------------------------------------------------------------
+#! /usr/bin/env python
 
-import pyglet
+import os
+import sys
+
+from PyQt4 import QtCore, QtGui, QtOpenGL, uic
+from PyQt4.QtCore import *
+from PyQt4.QtOpenGL import *
+
 from pyglet.gl import *
+import pyglet
 
 from sound import *
 
-class Window(pyglet.window.Window):
-    def __init__(self, *args, **kwargs):
-        super(Window, self).__init__(*args, **kwargs)
+
+class GLWidget(QGLWidget):
+    def __init__(self, parent=None):
+        super(GLWidget, self).__init__(QtOpenGL.QGLFormat(QtOpenGL.QGL.SampleBuffers), parent)
+        self.setGeometry(10, 10, 800, 600)
+        
+        self.clock = QtCore.QTimer()
+        self.clock.setSingleShot(False)
+        self.clock.timeout.connect(self.animate)
+        self.clock.start()
+        
+        self.time = QtCore.QTime()
+        
+        self.setAutoFillBackground(False)
+        
         self.draw_handlers = []
         self.menu_handlers = []
         self.update_handlers = []
-        pyglet.clock.schedule(self.update)
-        self.batch = pyglet.graphics.Batch()
-        self.layer0 = pyglet.graphics.OrderedGroup(0)
-        self.layer1 = pyglet.graphics.OrderedGroup(1)
-        self.layer2 = pyglet.graphics.OrderedGroup(2)
-        self.layer3 = pyglet.graphics.OrderedGroup(3)
         
+        self.frames = 0
+        self.last_pos = (0, 0)
+        self.dt = 0.00001
+    
+    def __del__(self):
+        sound.thread.ProcOff()
+    
+    def initializeGL(self):
+        glClearColor(0., 0., 0., 1.)
         glEnable(GL_BLEND)
         glEnable(GL_LINE_SMOOTH)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-        
-        self.clock = pyglet.clock.ClockDisplay()
     
-    def on_draw(self):
-        self.clear()
-        self.clock.draw()
+    def keyPressEvent(self, event):
+        import space
+        space.manage.active.key_press(event)
+    
+    def mousePressEvent(self, event):
+        self.lastPos = event.pos()
+        import space
+        space.manage.active.mouse_press(event)
+        self.last_pos = (event.x(), event.y())
+    
+    def mouseMoveEvent(self, event):
+        import space
+        space.manage.active.mouse_move(event)
+        self.last_pos = (event.x(), event.y())
+    
+    def mouseReleaseEvent(self, event):
+        import space
+        space.manage.active.mouse_release(event)
+    
+    def paintEvent(self, event):
+        self.makeCurrent()
         
+        glClear(GL_COLOR_BUFFER_BIT)
+        
+        painter = QtGui.QPainter(self)
+        painter.setRenderHint(QtGui.QPainter.Antialiasing)
+        painter.save()
+        
+        fps = QtCore.QString()
+        fps.setNum(1./self.dt, 'f', 3)
+        
+        painter.setPen(QtGui.QColor('white'))
+        painter.drawText(20, 40, fps + " fps")
+        painter.restore()
+        
+        # draw
         for handler in self.draw_handlers:
-            handler()
+            handler(painter)
         
-        self.batch.draw()
-        
-        for handler in self.menu_handlers:
-            handler()
+        painter.end()
     
-    def on_exit(self):
-        sound.thread.ProcOff()
-        sound.thread = None
-        pyglet.app.exit()
+    def resizeGL(self, width, height):
+        glViewport(0, 0, width, height)
+        self.updateGL()
     
-    def update(self, dt):
+    def animate(self):
+        self.dt = self.time.restart()/1000.
+        if self.dt == 0.0:
+            self.dt = 0.0000001
+            
         for handler in self.update_handlers:
-            handler(dt)
+            handler(self.dt)
+        self.update()
 
 
-# init window to be shared among modules
-window = Window(width=1224, height=700, resizable=True, vsync=True, caption='VIZI 0.1')
+app = QtGui.QApplication(sys.argv)
+window=GLWidget()

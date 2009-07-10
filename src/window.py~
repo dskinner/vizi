@@ -12,51 +12,11 @@ import pyglet
 
 from sound import *
 
-class Button(QtGui.QPushButton):
-    def __init__(self, *args):
-        super(Button, self).__init__(*args)
-        self.setGeometry(10, 100, 100, 25)
-    
-    def mousePressEvent(self, event):
-        import space
-        from viziobj import Oscili
-        super(Button, self).mousePressEvent(event)
-        #space.manage.active.add_body(Oscili(position=(150, 150)))
-        window.menu._menu.tab.show()
-
-
-class Events(QtCore.QObject):
-    def mouse_press(self, bool):
-        print 'event: ', bool
-
-
-class List(QtGui.QListWidget):
-    def __init__(self, *args):
-        super(List, self).__init__(*args)
-        self.setGeometry(10, 150, 175, 300)
-
-
-class Menu(QtGui.QTabWidget):
-    def __init__(self, *args):
-        super(Menu, self).__init__(*args)
-        self._menu = uic.loadUi('menu.ui', self)
-        self.connect(self._menu.listWidget, SIGNAL('clicked(QModelIndex)'), \
-                     self.clicked)
-    
-    def clicked(self, index):
-        print 'index:', index.data().toString()
-
 
 class GLWidget(QGLWidget):
     def __init__(self, parent=None):
         super(GLWidget, self).__init__(QtOpenGL.QGLFormat(QtOpenGL.QGL.SampleBuffers), parent)
         self.setGeometry(10, 10, 800, 600)
-        
-        self.menu = Menu(self)
-        
-        self.button_show= Button('Show Panel', self)
-        self.connect(self.button_show, QtCore.SIGNAL('clicked()'), \
-                     self.menu, QtCore.SLOT('show()'))
         
         self.clock = QtCore.QTimer()
         self.clock.setSingleShot(False)
@@ -86,11 +46,7 @@ class GLWidget(QGLWidget):
     
     def keyPressEvent(self, event):
         import space
-        from viziobj import Oscili
-        if event.key() == 79:
-            space.manage.active.add_body(Oscili(position=(150, 150)))
-        if event.key() == 80:
-            space.manage.active.step = not space.manage.active.step
+        space.manage.active.key_press(event)
     
     def mousePressEvent(self, event):
         self.lastPos = event.pos()
