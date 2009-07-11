@@ -351,8 +351,8 @@ class Oscili(Orb2):
     def __init__(self, *args, **kwargs):
         super(Oscili, self).__init__(*args, **kwargs)
         
-        self.snd = sndobj.Oscili(sound.tab, 0, 99)
-        self.blue.rotation = 99
+        self.snd = sndobj.Oscili(sound.tab, 0, 90)
+        self.blue.rotation = 90
         
         self.popout = numpy.zeros(self.snd.GetVectorSize(), dtype='float32')
     

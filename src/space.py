@@ -16,28 +16,21 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 #-----------------------------------------------------------------------------
-'''
-@todo:  * Work on draw routines, theyve become a bit weird with the addition
-          of multiple workspaces.
-        * clean up labels for spaces
-'''
 
 from __future__ import division
 from Box2D import *
 from math import degrees
-import pyglet
-from pyglet.window import key, mouse
 from PyQt4 import QtCore
 from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QPixmap
+
 try:
     import sndobj
 except:
     import win32sndobj as sndobj
 
-
 from sound import *
-from window import *
+from qgl import * # glwidget
 
 class BoundingBox(object):
     def __init__(self, world, position, size):
@@ -65,37 +58,35 @@ class ManageSpace(object):
         
         self.line_in_port = 0
         
-        #window.push_handlers(self)
-        
     def activate_space(self, i):
         if self.active is not None:
-            #window.remove_handlers(self.active)
-            window.draw_handlers.remove(self.active.draw)
+            glwidget.draw_handlers.remove(self.active.draw)
         
         self.active = self.spaces[i%len(self.spaces)]
         
-        window.draw_handlers.append(self.active.draw)
-        window.update_handlers.append(self.active.update)
-        #window.push_handlers(self.active)
+        glwidget.draw_handlers.append(self.active.draw)
+        glwidget.update_handlers.append(self.active.update)
         
-    def on_key_press(self, symbol, modifiers):
-        if symbol == key.COMMA:
+    def on_key_press(self, event):
+        if event.key() == Qt.Key_Comma:
             self.activate_space(self.spaces.index(self.active) - 1)
-        elif symbol == key.PERIOD:
-            self.activate_space(self.spaces.index(self.active) +1) 
+        elif event.key() == Qt.Key_Period:
+            self.activate_space(self.spaces.index(self.active) +1)
         
         if self.active is None:
             return
 
 
 class Master(object):
-    '''A decoration to represent master channel of local mixer'''
+    pixmap = QPixmap('../res/orb_white.png')
+    
     def __init__(self, world):
-        self.pixmap = QPixmap('res/orb_white.png')
-        self.scale = 0.5
+        glwidget.makeCurrent()
+        self.texture = glwidget.bindTexture( \
+            self.pixmap.scaledToWidth(self.pixmap.width()/2.))
         
         self.body_def = b2BodyDef()
-        self.body_def.position = (window.width()/2, window.height()/2)
+        self.body_def.position = (glwidget.width()/2, glwidget.height()/2)
         self.body = world.world.CreateBody(self.body_def)
         
         self.circle_def = b2CircleDef()
@@ -108,13 +99,9 @@ class Master(object):
     
     def draw(self, painter):
         x, y = self.body.position.x, self.body.position.y
-        w, h = self.pixmap.width(), self.pixmap.height()
-        painter.save()
-        painter.translate(x-(w/2/2), y-(h/2/2))
-        painter.rotate(degrees(self.body.angle))
-        painter.scale(0.5, 0.5)
-        painter.drawPixmap(0, 0, self.pixmap)
-        painter.restore()
+        w, h = self.pixmap.width()/4, self.pixmap.height()/4
+        glLoadIdentity()
+        glwidget.drawTexture(QtCore.QPointF(x-w, y-h), self.texture)
     
     def hit_test(self, x, y):
         x2, y2 = self.body.position.x, self.body.position.y
@@ -147,8 +134,8 @@ class Space(object):
         
         self.worldAABB = b2AABB()
         self.worldAABB.lowerBound = (0, 0)
-        self.worldAABB.upperBound = (window.width(), window.height())
-        self.gravity = (0, 0)
+        self.worldAABB.upperBound = (glwidget.width(), glwidget.height())
+        self.gravity = (0, 10)
         self.sleep = True
         self.world = b2World(self.worldAABB, self.gravity, self.sleep)
         self.master = None
@@ -157,7 +144,7 @@ class Space(object):
         self.master = Master(self) # decoratively the master channel for the local mixer
         self.add_body(self.master)
         
-        w, h = window.width(), window.height()
+        w, h = glwidget.width(), glwidget.height()
         self.add_body(BoundingBox(self, (w/2, 10), (w/2, 5)))
         self.add_body(BoundingBox(self, (w/2, h-10), (w/2, 5)))
         self.add_body(BoundingBox(self, (10, h/2), (5, h/2)))
@@ -167,12 +154,6 @@ class Space(object):
         
     def add_body(self, body):
         self.bodies.append(body)
-        
-        if hasattr(body, 'draw'):
-            pass#window.draw_handlers.append(body.draw)
-        if hasattr(body, 'update'):
-            window.update_handlers.append(body.update)
-        #window.push_handlers(body)
         
         if hasattr(body, 'snd') and not isinstance(body.snd, sndobj.Mixer):
             sound.thread.AddObj(body.snd)
@@ -191,12 +172,6 @@ class Space(object):
         
         for body in self.bodies:
             if hasattr(body, 'destroy') and body.destroy:
-                if hasattr(body, 'draw'):
-                    pass#window.draw_handlers.remove(body.draw)
-                if hasattr(body, 'update'):
-                    window.update_handlers.remove(body.update)
-                window.remove_handlers(body)
-                
                 if hasattr(body, 'in_mixer') and body.in_mixer:
                     self.mixer.DeleteObj(body.snd)
                 sound.thread.DeleteObj(body.snd)
@@ -207,6 +182,8 @@ class Space(object):
                     body.on_destroy()
                 
                 self.bodies.remove(body)
+            elif hasattr(body, 'update'):
+                body.update(dt)
 
     def key_press(self, event):
         if event.key() == Qt.Key_QuoteLeft:
@@ -227,8 +204,7 @@ class Space(object):
                     else:
                         self.mixer.AddObj(body.snd)
                         body.in_mixer = True
-        if event.key() == Qt.Key_F11:
-            window.set_fullscreen(not window.fullscreen)
+        
         if event.key() == Qt.Key_P:
             self.step = not self.step
         if event.key() == Qt.Key_Delete:
@@ -322,7 +298,7 @@ class Space(object):
     
     def mouse_move(self, event):
         x, y = event.x(), event.y()
-        dx, dy = window.lastPos.x(), window.lastPos.y()
+        dx, dy = glwidget.lastPos.x(), glwidget.lastPos.y()
         for body in self.bodies:
             if hasattr(body, 'mouseJoint') and body.mouseJoint:
                 if self.step:

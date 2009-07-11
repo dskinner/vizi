@@ -30,6 +30,7 @@ from pyglet.gl import *
 from PyQt4.QtGui import QPixmap, QWidget
 from window import *
 from utils import *
+from qgl import *
 
 class ControlDecorative(object):
     def __init__(self):
@@ -96,10 +97,12 @@ class ControlRotate(object):
 
 
 class Base(ControlPosition):
-    pixmap = QPixmap('res/orb2_base.png')
+    pixmap = QPixmap('../res/orb2_base.png')
     
     def __init__(self):
         super(Base, self).__init__()
+        glwidget.makeCurrent()
+        self.texture = glwidget.bindTexture(self.pixmap)
     
     def adjust_position(self, dx, dy, body):
         print dx, dy
@@ -107,32 +110,30 @@ class Base(ControlPosition):
         body.position = (x+dx, y+dy)
     
     def draw(self, painter, x, y):
-        w, h = self.pixmap.width(), self.pixmap.height()
-        painter.save()
-        painter.translate(x-(w/2), y-(h/2))
-        painter.drawPixmap(0, 0, self.pixmap)
-        painter.restore()
+        w, h = self.pixmap.width()/2., self.pixmap.height()/2.
+        glLoadIdentity()
+        glwidget.drawTexture(QtCore.QPointF(x-w, y-h), self.texture)
 
 
 class MixerBase(Base):
-    pixmap = QPixmap('res/orb_white_sm.png')
+    pixmap = QPixmap('../res/orb_white_sm.png')
 
 
 class Blue(ControlRotate):
-    pixmap = QPixmap('res/orb2_blue_control.png')
+    pixmap = QPixmap('../res/orb2_blue_control.png')
     
     def __init__(self):
         super(Blue, self).__init__()
-        # 6px blur
+        glwidget.makeCurrent()
+        self.texture = glwidget.bindTexture(self.pixmap)
     
     def draw(self, painter, x, y):
         w, h = self.pixmap.width(), self.pixmap.height()
-        painter.save()
-        painter.translate(x, y)
-        painter.rotate(self.rotation)
-        painter.translate(-6, -6)
-        painter.drawPixmap(0, 0, self.pixmap)
-        painter.restore()
+        glLoadIdentity()
+        glTranslatef(x, y, 1)
+        glRotatef(self.rotation, 0, 0, 1)
+        glTranslatef(-6, -6, 1)
+        glwidget.drawTexture(QtCore.QPointF(0, 0), self.texture)
 
     def adjust_angle(self, r, body):
         diff = self.history[-1] - self.history[-2]
@@ -144,41 +145,41 @@ class Blue(ControlRotate):
 
 
 class Center(ControlDecorative):
-    pixmap = QPixmap('res/orb2_center.png')
+    pixmap = QPixmap('../res/orb2_center.png')
     
     def __init__(self):
         super(Center, self).__init__()
+        glwidget.makeCurrent()
+        self.texture = glwidget.bindTexture(self.pixmap)
     
     def draw(self, painter, x, y):
-        w, h = self.pixmap.width(), self.pixmap.height()
-        painter.save()
-        painter.translate(x-(w/2), y-(h/2))
-        painter.drawPixmap(0, 0, self.pixmap)
-        painter.restore()
+        w, h = self.pixmap.width()/2., self.pixmap.height()/2.
+        glLoadIdentity()
+        glwidget.drawTexture(QtCore.QPointF(x-w, y-h), self.texture)
 
 
 class Center2(ControlDecorative):
-    pixmap = QPixmap('res/orb2_center2.png')
+    pixmap = QPixmap('../res/orb2_center2.png')
     
     def __init__(self):
         super(Center2, self).__init__()
 
 
 class Orange(ControlRotate):
-    pixmap = QPixmap('res/orb2_orange_control.png')
+    pixmap = QPixmap('../res/orb2_orange_control.png')
     
     def __init__(self):
         super(Orange, self).__init__()
-        # 6px blur
+        glwidget.makeCurrent()
+        self.texture = glwidget.bindTexture(self.pixmap)
     
     def draw(self, painter, x, y):
         w, h = self.pixmap.width(), self.pixmap.height()
-        painter.save()
-        painter.translate(x, y)
-        painter.rotate(self.rotation)
-        painter.translate(-6, -6)
-        painter.drawPixmap(0, 0, self.pixmap)
-        painter.restore()
+        glLoadIdentity()
+        glTranslatef(x, y, 1)
+        glRotatef(self.rotation, 0, 0, 1)
+        glTranslatef(-6, -6, 1)
+        glwidget.drawTexture(QtCore.QPointF(0, 0), self.texture)
     
     def adjust_angle(self, r, body):
         diff = self.history[-1] - self.history[-2]
@@ -190,7 +191,7 @@ class Orange(ControlRotate):
 
 
 class MultiConnect(ControlDecorative):
-    image = pyglet.image.load('res/orb_multi_connect.png')
+    image = pyglet.image.load('../res/orb_multi_connect.png')
     
     def __init__(self, batch, group):
         super(MultiConnect, self).__init__()

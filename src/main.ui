@@ -6,37 +6,139 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>671</width>
-    <height>600</height>
+    <width>680</width>
+    <height>559</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
-  <widget class="QGLWidget" name="glcontext"/>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QTabWidget" name="tabWidget">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>40</y>
+      <width>131</width>
+      <height>381</height>
+     </rect>
+    </property>
+    <property name="tabPosition">
+     <enum>QTabWidget::West</enum>
+    </property>
+    <property name="currentIndex">
+     <number>0</number>
+    </property>
+    <widget class="QWidget" name="tab">
+     <attribute name="title">
+      <string>Tab 1</string>
+     </attribute>
+     <widget class="QListWidget" name="listWidget">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>101</width>
+        <height>271</height>
+       </rect>
+      </property>
+      <item>
+       <property name="text">
+        <string>Gain</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Mixer</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Oscili</string>
+       </property>
+      </item>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="tab_2">
+     <attribute name="title">
+      <string>Tab 2</string>
+     </attribute>
+    </widget>
+   </widget>
+   <widget class="QFrame" name="drawarea">
+    <property name="geometry">
+     <rect>
+      <x>140</x>
+      <y>40</y>
+      <width>531</width>
+      <height>381</height>
+     </rect>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::StyledPanel</enum>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Raised</enum>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="checkBox">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>230</y>
+      <width>21</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="checked">
+     <bool>true</bool>
+    </property>
+   </widget>
+  </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>671</width>
+     <width>680</width>
      <height>21</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionNew"/>
+   </widget>
+   <addaction name="menuFile"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionNew">
+   <property name="text">
+    <string>New</string>
+   </property>
+  </action>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>QGLWidget</class>
-   <extends>QWidget</extends>
-   <header>qglwidget.h</header>
-   <container>1</container>
-   <slots>
-    <slot>initializeGL()</slot>
-   </slots>
-  </customwidget>
- </customwidgets>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>checkBox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>tabWidget</receiver>
+   <slot>setShown(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>11</x>
+     <y>271</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>32</x>
+     <y>428</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>
