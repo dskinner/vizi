@@ -1,4 +1,5 @@
 #-----------------------------------------------------------------------------
+#
 #    Copyright (C) 2009  Daniel Skinner
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -39,8 +40,8 @@ class Sound(object):
         self.thread = sndobj.SndThread()
         self.mixer_left = sndobj.Mixer()
         self.mixer_right = sndobj.Mixer()
-        self.thread.AddObj(self.mixer_left)
-        self.thread.AddObj(self.mixer_right)
+	self.thread.AddObj(self.mixer_left)
+	self.thread.AddObj(self.mixer_right)
         if interface == 'jack': 
             self.gain_left = sndobj.Gain(0., self.mixer_left)
             self.gain_left.SetGainM(1./32768)

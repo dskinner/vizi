@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/!svn/ver/1288/trunk/contrib/wydget/wydget/clipboard
+END
+xlib.py
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/!svn/ver/1288/trunk/contrib/wydget/wydget/clipboard/xlib.py
+END
+__init__.py
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/!svn/ver/1119/trunk/contrib/wydget/wydget/clipboard/__init__.py
+END
+win32.py
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/!svn/ver/1155/trunk/contrib/wydget/wydget/clipboard/win32.py
+END
+carbon.py
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/!svn/ver/1120/trunk/contrib/wydget/wydget/clipboard/carbon.py
+END

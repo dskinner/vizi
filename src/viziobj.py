@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-----------------------------------------------------------------------------
 #
 #    Copyright (C) 2009  Daniel Skinner
@@ -290,23 +291,29 @@ class Loop(Orb2):
     def __init__(self, *args, **kwargs):
         super(Loop, self).__init__(*args, **kwargs)
         self.default_in = sndobj.SndIn()
-        self.snd = sndobj.SndLoop(0.05, 5., self.default_in, 1.)
+        self.snd = sndobj.SndLoop(0.05, 2., self.default_in, 1.)
         
-        self.infobox = ''' {color (255,255,255,255)}{bold True}Semitone: \n {font_name 'Flotsam smart'}{bold False}SnDlooP'''
+        self.infobox = ''' {color (255,255,255,255)}{bold True}Pitch: \n XFade: \n {font_name 'Flotsam smart'}{bold False}SnDlooP'''
         
         self.popout = numpy.zeros(self.snd.GetVectorSize(), dtype='float32')
         
-        self.orange = None
+        self.orange.rotation = 5.
+        self.blue.rotation = 1.
     
-    def set_output(self, obj):
-        super(Loop, self).set_output(obj)
+    def on_connect(self, to_obj):
+        self.snd.SetInput(to_obj.snd)
         self.snd.ReSample()
     
     def update(self, dt):
-        semitone = int(self.blue.rotation/12)
+        pitch = abs(self.blue.rotation/100.)
+        xfade = abs(self.orange.rotation/100.)
         
-        self.snd.SetPitch(semitone)
-        self.label_looptime.text = 'Loop Time: {0}'.format(semitone)
+        self.snd.SetPitch(pitch)
+        self.snd.SetXFade(xfade)
+        
+        if self.hovering:
+            self.update_infobox([pitch, xfade])
+        
         self.snd.PopOut(self.popout[0:self.snd.GetVectorSize()])
 
 
@@ -341,6 +348,8 @@ class Mixer(OrbMixer):
         
         self.snd = self.space.mixer
         
+        self.infobox = ''' {color (255,255,255,255)}{font_name 'Flotsam smart'}MiXer'''
+        
         self.popout = numpy.zeros(self.space.mixer.GetVectorSize(), dtype='float32')
     
     def update(self, dt):
@@ -351,8 +360,10 @@ class Oscili(Orb2):
     def __init__(self, *args, **kwargs):
         super(Oscili, self).__init__(*args, **kwargs)
         
-        self.snd = sndobj.Oscili(sound.tab, 0, 90)
-        self.blue.rotation = 90
+        self.snd = sndobj.Oscili(sound.tab, 0, 180)
+        self.blue.rotation = 180
+        
+        self.infobox = ''' {color (255,255,255,255)}{bold True}Frequency: \n Amplitude: \n {font_name 'Flotsam smart'}{bold False}OsCiLi'''
         
         self.popout = numpy.zeros(self.snd.GetVectorSize(), dtype='float32')
     
@@ -363,6 +374,9 @@ class Oscili(Orb2):
             val=abs(degrees(self.body.angle)))
         amplitude = abs(self.blue.rotation)
         
+        if self.hovering:
+            self.update_infobox([frequency, amplitude])
+        
         self.snd.SetFreq(frequency)
         self.snd.SetAmp(amplitude)
         self.snd.PopOut(self.popout[0:self.snd.GetVectorSize()])
@@ -372,8 +386,8 @@ class OsciliHam(Orb2):
     def __init__(self, *args, **kwargs):
         super(OsciliHam, self).__init__(*args, **kwargs)
         
-        self.snd = sndobj.Oscili(sound.ham, 0, 9900)
-        self.blue.rotation = 9900
+        self.snd = sndobj.Oscili(sound.ham, 0, 180)
+        self.blue.rotation = 180
         
         self.infobox = ''' {color (255,255,255,255)}{bold True}Frequency: \n Amplitude: \n {font_name 'Flotsam smart'}{bold False}OsCiLi'''
         
@@ -396,8 +410,8 @@ class OsciliSaw(Orb2):
     def __init__(self, *args, **kwargs):
         super(OsciliSaw, self).__init__(*args, **kwargs)
         
-        self.snd = sndobj.Oscili(sound.saw, 0, 9900)
-        self.blue.rotation = 9900
+        self.snd = sndobj.Oscili(sound.saw, 0, 180)
+        self.blue.rotation = 180
         
         self.infobox = ''' {color (255,255,255,255)}{bold True}Frequency: \n Amplitude: \n {font_name 'Flotsam smart'}{bold False}OsCiLi'''
         
@@ -420,8 +434,8 @@ class OsciliBuzz(Orb2):
     def __init__(self, *args, **kwargs):
         super(OsciliBuzz, self).__init__(*args, **kwargs)
         
-        self.snd = sndobj.Oscili(sound.buzz, 0, 9900)
-        self.blue.rotation = 9900
+        self.snd = sndobj.Oscili(sound.buzz, 0, 180)
+        self.blue.rotation = 180
         
         self.infobox = ''' {color (255,255,255,255)}{bold True}Frequency: \n Amplitude: \n {font_name 'Flotsam smart'}{bold False}OsCiLi'''
         
@@ -765,6 +779,7 @@ class Wave(Orb2):
         self.snd = sndobj.SndWave("frompysndobj.wav", sndobj.OVERWRITE)
         self.snd.SetOutput(1, self.default_in)
         sound.thread.AddObj(self.snd, sndobj.SNDIO_OUT)
+        self.in_mixer = False
         
         self.infobox = ''' {color (255,255,255,255)}{font_name 'Flotsam smart'}Wave'''
         
@@ -778,5 +793,5 @@ class Wave(Orb2):
         self.snd.SetOutput(1, to_obj.snd)
     
     def update(self, dt):
-        self.snd.PopOut(self.popout[0:self.snd.GetVectorSize()])
+        pass#self.snd.PopOut(self.popout[0:self.snd.GetVectorSize()])
 
