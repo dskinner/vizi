@@ -33,7 +33,7 @@ class GLWidget(QtOpenGL.QGLWidget):
         self.renderText(20, 30, fps)
         
         for handler in self.draw_handlers:
-            handler(painter)
+            pass#handler(painter)
         
         painter.end()
     
@@ -42,22 +42,22 @@ class GLWidget(QtOpenGL.QGLWidget):
         self.updateGL()
     
     def keyPressEvent(self, event):
-        import qspace as space
+        import space
         space.manage.active.key_press(event)
     
     def mousePressEvent(self, event):
         self.lastPos = event.pos()
-        import qspace as space
+        import space
         space.manage.active.mouse_press(event)
         self.last_pos = (event.x(), event.y())
     
     def mouseMoveEvent(self, event):
-        import qspace as space
+        import space
         space.manage.active.mouse_move(event)
         self.last_pos = (event.x(), event.y())
     
     def mouseReleaseEvent(self, event):
-        import qspace as space
+        import space
         space.manage.active.mouse_release(event)
 
 
