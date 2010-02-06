@@ -6,8 +6,8 @@ from timer import *
 
 class GLWidget(QtOpenGL.QGLWidget):
     def __init__(self, parent=None):
-        super(GLWidget, self).__init__(QtOpenGL.QGLFormat(QtOpenGL.QGL.SampleBuffers))
-        self.setGeometry(0, 0, 1224, 700)
+        super(GLWidget, self).__init__(QtOpenGL.QGLFormat(QtOpenGL.QGL.SampleBuffers), parent)
+        self.setGeometry(0, 0, parent.width(), parent.height())
         self.setAutoFillBackground(False)
         
         self.draw_handlers = []
@@ -21,26 +21,31 @@ class GLWidget(QtOpenGL.QGLWidget):
     
     def paintGL(self):
         # update all relevant objects before drawing
+        '''
         for handler in self.update_handlers:
             handler(time.dt)
-        
+        '''
+        #
         #
         glClear(GL_COLOR_BUFFER_BIT)
+        
         painter = QtGui.QPainter(self)
+        #painter.begin(self)
+        
         
         fps = QtCore.QString()
         fps.setNum(time.dt, 'f', 3)
         self.renderText(20, 30, fps)
         
-        for handler in self.draw_handlers:
-            pass#handler(painter)
+        #for handler in self.draw_handlers:
+        #    handler(painter)
         
-        painter.end()
+        #painter.end()
     
     def resizeGL(self, width, height):
         glViewport(0, 0, width, height)
         self.updateGL()
-    
+    '''
     def keyPressEvent(self, event):
         import space
         space.manage.active.key_press(event)
@@ -59,9 +64,13 @@ class GLWidget(QtOpenGL.QGLWidget):
     def mouseReleaseEvent(self, event):
         import space
         space.manage.active.mouse_release(event)
+    '''
 
 
+window = QtGui.QWidget()
+window.resize(1224, 700)
+window.setWindowTitle('VIZI 0.2')
 
-glwidget = GLWidget()
+glwidget = GLWidget(window)
 timer.timeout.connect(glwidget.updateGL)
 
