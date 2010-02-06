@@ -1,13 +1,13 @@
+# -*- coding: utf-8 -*-
 from OpenGL.GL import *
 from PyQt4 import QtCore, QtGui, QtOpenGL
 
 from timer import *
-from window import *
 
 class GLWidget(QtOpenGL.QGLWidget):
-    def __init__(self, parent):
-        super(GLWidget, self).__init__(QtOpenGL.QGLFormat(QtOpenGL.QGL.SampleBuffers), parent)
-        self.setGeometry(0, 0, parent.width(), parent.height())
+    def __init__(self, parent=None):
+        super(GLWidget, self).__init__(QtOpenGL.QGLFormat(QtOpenGL.QGL.SampleBuffers))
+        self.setGeometry(0, 0, 1224, 700)
         self.setAutoFillBackground(False)
         
         self.draw_handlers = []
@@ -42,26 +42,26 @@ class GLWidget(QtOpenGL.QGLWidget):
         self.updateGL()
     
     def keyPressEvent(self, event):
-        import space
+        import qspace as space
         space.manage.active.key_press(event)
     
     def mousePressEvent(self, event):
         self.lastPos = event.pos()
-        import space
+        import qspace as space
         space.manage.active.mouse_press(event)
         self.last_pos = (event.x(), event.y())
     
     def mouseMoveEvent(self, event):
-        import space
+        import qspace as space
         space.manage.active.mouse_move(event)
         self.last_pos = (event.x(), event.y())
     
     def mouseReleaseEvent(self, event):
-        import space
+        import qspace as space
         space.manage.active.mouse_release(event)
 
 
 
-glwidget = GLWidget(window.drawarea)
+glwidget = GLWidget()
 timer.timeout.connect(glwidget.updateGL)
 
