@@ -96,7 +96,7 @@ class SoundObject(object):
         vertices.shape = [vertices.size/2., 2]
         glLoadIdentity()
         glColor(1., 1., 1., 1.)
-        
+        glEnable(GL_MULTISAMPLE)
         glTranslatef(x, y, 0)
         
         #determine angle from current orb to master and rotate as such
@@ -195,7 +195,7 @@ class Orb2(SoundObject):
     
     def draw(self, painter):
         x, y = self.body.position.x, self.body.position.y
-        
+        y = 700-y
         self.base.draw(painter, x, y)
         if self.orange: # for handling disabled orange controls in some subclasses, for now
             self.orange.draw(painter, x, y)

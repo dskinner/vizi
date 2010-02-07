@@ -302,7 +302,7 @@ class Space(object):
     
     def mouse_press(self, event):
         x, y = event.x(), event.y()
-        
+        y = 700-y
         if event.buttons() & QtCore.Qt.MidButton:
             for body in self.bodies:
                 if hasattr(body, 'hit_test') and body.hit_test(x, y):
@@ -332,6 +332,7 @@ class Space(object):
     
     def mouse_release(self, event):
         x, y = event.x(), event.y()
+        y = 700-y
         if int(event.button()) == int(QtCore.Qt.LeftButton):
             for body in self.bodies:
                 if hasattr(body, 'mouseJoint') and body.mouseJoint:
@@ -375,6 +376,7 @@ class Space(object):
     
     def mouse_move(self, event):
         x, y = event.x(), event.y()
+        y = 700-y # TODO stop hacking upside Qt Canvas
         dx, dy = glwidget.lastPos.x(), glwidget.lastPos.y()
         
         for body in self.bodies:

@@ -3,7 +3,17 @@ from OpenGL.GL import *
 from OpenGL.GLU import *
 from PyQt4 import QtCore, QtGui, QtOpenGL
 from PyQt4.QtGui import QPixmap
+
 from timer import *
+
+class Menu(QtGui.QWidget):
+    def __init__(self, parent=None):
+        QtGui.QWidget.__init__(self, parent)
+        self.labels = ['Oscili', 'OsciliSaw']
+    
+    def draw(self, painter):
+        
+
 
 class GLWidget(QtOpenGL.QGLWidget):
     def __init__(self, parent=None):
@@ -18,21 +28,17 @@ class GLWidget(QtOpenGL.QGLWidget):
         self.update_handlers = []
     
     def initializeGL(self):
-        '''
-        glShadeModel(GL_SMOOTH)
-        glClearColor(0., 0., 0., 1.)
-        glEnable(GL_BLEND)
-        glEnable(GL_LINE_SMOOTH)
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-        '''
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
         glOrtho(0, self.width(), 0, self.height(), -1, 1)
         glMatrixMode(GL_MODELVIEW)
+        
         glClearColor(0.0, 0.0, 0.0, 1.0)
-    
-    def animate(self):
-        self.repaint()
+        #glShadeModel(GL_SMOOTH)
+        glClearColor(0., 0., 0., 1.)
+        glEnable(GL_BLEND)
+        glEnable(GL_LINE_SMOOTH)
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
     
     def paintGL(self):
         for handler in self.update_handlers:
@@ -48,7 +54,7 @@ class GLWidget(QtOpenGL.QGLWidget):
         painter.begin(self)
         
         fps = QtCore.QString()
-        fps.setNum(time.dt*1000, 'f', 2)
+        fps.setNum(1000./(time.dt*1000.), 'f', 3)
         
         painter.setPen(QtGui.QColor(255, 255, 255))
         painter.drawText(20, 30, fps)
@@ -85,4 +91,5 @@ class GLWidget(QtOpenGL.QGLWidget):
 glwidget = GLWidget()
 glwidget.setWindowTitle('VIZI 0.2')
 timer.timeout.connect(glwidget.updateGL)
+menu = Menu(glwidget)
 
