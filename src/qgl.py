@@ -6,13 +6,53 @@ from PyQt4.QtGui import QPixmap
 
 from timer import *
 
+class MenuLabel(QtGui.QLabel):
+    def mouseReleaseEvent(self, event):
+        print 'from label', self.text()
+
+
 class Menu(QtGui.QWidget):
     def __init__(self, parent=None):
         QtGui.QWidget.__init__(self, parent)
-        self.labels = ['Oscili', 'OsciliSaw']
+        self.labels = [ 'ADSR',
+                        'Balance',
+                        'Buzz',
+                        'FFT',
+                        'Filter',
+                        'Gain',
+                        'HarmTable',
+                        'HiPass',
+                        'Hilb',
+                        'IFFT',
+                        'LineIn',
+                        'LoPass',
+                        'Loop',
+                        'Mixer',
+                        'Oscili',
+                        'OsciliSaw',
+                        'OsciliBuzz',
+                        'OsciliHam',
+                        'PVA',
+                        'PVBlur',
+                        'PVMorph',
+                        'PVS',
+                        'Phase',
+                        'Pitch',
+                        'Ring',
+                        'SndRead',
+                        'SpecMult',
+                        'SpecThresh',
+                        'SpecVoc',
+                        'VDelay',
+                        'Wave']
+        self.labels = [MenuLabel(x) for x in self.labels]
+        layout = QtGui.QVBoxLayout()
+        for l in self.labels:
+            layout.addWidget(l)
+        self.setLayout(layout)
     
-    def draw(self, painter):
-        
+    def get_text(self):
+        print 'hi'
 
 
 class GLWidget(QtOpenGL.QGLWidget):
@@ -57,7 +97,7 @@ class GLWidget(QtOpenGL.QGLWidget):
         fps.setNum(1000./(time.dt*1000.), 'f', 3)
         
         painter.setPen(QtGui.QColor(255, 255, 255))
-        painter.drawText(20, 30, fps)
+        painter.drawText(20, 670, fps)
         
         for handler in self.draw_handlers:
             glLoadIdentity()
