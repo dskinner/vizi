@@ -43,8 +43,9 @@ import b2
 import control
 from utils import *
 import space
+from qgl import *
 
-from PyQt4 import QtGui
+from PyQt4 import QtGui, QtCore, Qt
 
 class SoundObject(object):
     def __init__(self):
@@ -57,10 +58,12 @@ class SoundObject(object):
         self.processing = True
         self.in_mixer = True
     
-    def draw_waveform(self, painter):
+    def draw_waveform(self):
         if not hasattr(self, 'popout'):
             return
+        
         glLoadIdentity()
+        
         x, y = self.body.position.x, self.body.position.y
         
         if self.output is not None:
@@ -91,8 +94,11 @@ class SoundObject(object):
         
         vertices[0:-1:2] = self.popout
         vertices.shape = [vertices.size/2., 2]
+        glLoadIdentity()
+        glColor(1., 1., 1., 1.)
         
-        glTranslatef(x, y, 1)
+        glTranslatef(x, y, 0)
+        
         #determine angle from current orb to master and rotate as such
         r = -degrees(atan2(x2-x, y2-y))
         glRotatef(r, 0, 0, 1)
@@ -101,6 +107,8 @@ class SoundObject(object):
         glVertexPointer(2, GL_FLOAT, 0, vertices)
         glDrawArrays(GL_LINE_STRIP, 0, len(vertices))
         glDisableClientState(GL_VERTEX_ARRAY)
+        
+        glLoadIdentity()
     
     def get_output(self):
         return self._output
@@ -164,6 +172,7 @@ class Orb2(SoundObject):
         
         # update physics body based on control value
         self.map_physics = {'orange rotation': 'body angle'}
+        glwidget.draw_gl_handlers.append(self.draw_gl)
         
         # useful for debugging during draw
         '''
@@ -200,6 +209,9 @@ class Orb2(SoundObject):
             self.center.sprite.color = (50, 50, 50)
         '''
         
+    def draw_gl(self):
+        self.draw_waveform()
+    
     def mouse_press(self, event):
         x, y = event.x(), event.y()
         

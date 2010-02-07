@@ -101,8 +101,6 @@ class Base(ControlPosition):
     
     def __init__(self):
         super(Base, self).__init__()
-        glwidget.makeCurrent()
-        self.texture = glwidget.bindTexture(self.pixmap)
     
     def adjust_position(self, dx, dy, body):
         print dx, dy
@@ -110,9 +108,9 @@ class Base(ControlPosition):
         body.position = (x+dx, y+dy)
     
     def draw(self, painter, x, y):
-        w, h = self.pixmap.width()/2., self.pixmap.height()/2.
         glLoadIdentity()
-        glwidget.drawTexture(QtCore.QPointF(x-w, y-h), self.texture)
+        w, h = self.pixmap.width()/2., self.pixmap.height()/2.
+        painter.drawPixmap(x-w, y-h, self.pixmap)
 
 
 class MixerBase(Base):
@@ -120,20 +118,24 @@ class MixerBase(Base):
 
 
 class Blue(ControlRotate):
-    pixmap = QPixmap('res/orb2_blue_control.png')
+    pixmap = QPixmap('res/orb2_blue_control_r.png')
     
     def __init__(self):
         super(Blue, self).__init__()
-        glwidget.makeCurrent()
-        self.texture = glwidget.bindTexture(self.pixmap)
     
     def draw(self, painter, x, y):
         w, h = self.pixmap.width(), self.pixmap.height()
-        glLoadIdentity()
-        glTranslatef(x, y, 1)
-        glRotatef(self.rotation, 0, 0, 1)
-        glTranslatef(-6, -6, 1)
-        glwidget.drawTexture(QtCore.QPointF(0, 0), self.texture)
+        
+        #glTranslatef(x, y, 1)
+        #glRotatef(self.rotation, 0, 0, 1)
+        #glTranslatef(-6, -6, 1)
+        
+        painter.save()
+        painter.translate(x, y)
+        painter.rotate(self.rotation)
+        painter.translate(-6, -6)
+        painter.drawPixmap(0, 0, self.pixmap)
+        painter.restore()
 
     def adjust_angle(self, r, body):
         diff = self.history[-1] - self.history[-2]
@@ -149,13 +151,10 @@ class Center(ControlDecorative):
     
     def __init__(self):
         super(Center, self).__init__()
-        glwidget.makeCurrent()
-        self.texture = glwidget.bindTexture(self.pixmap)
     
     def draw(self, painter, x, y):
         w, h = self.pixmap.width()/2., self.pixmap.height()/2.
-        glLoadIdentity()
-        glwidget.drawTexture(QtCore.QPointF(x-w, y-h), self.texture)
+        painter.drawPixmap(x-w, y-h, self.pixmap)
 
 
 class Center2(ControlDecorative):
@@ -166,20 +165,24 @@ class Center2(ControlDecorative):
 
 
 class Orange(ControlRotate):
-    pixmap = QPixmap('res/orb2_orange_control.png')
+    pixmap = QPixmap('res/orb2_orange_control_r.png')
     
     def __init__(self):
         super(Orange, self).__init__()
-        glwidget.makeCurrent()
-        self.texture = glwidget.bindTexture(self.pixmap)
     
     def draw(self, painter, x, y):
         w, h = self.pixmap.width(), self.pixmap.height()
-        glLoadIdentity()
-        glTranslatef(x, y, 1)
-        glRotatef(self.rotation, 0, 0, 1)
-        glTranslatef(-6, -6, 1)
-        glwidget.drawTexture(QtCore.QPointF(0, 0), self.texture)
+        
+        #glTranslatef(x, y, 1)
+        #glRotatef(self.rotation, 0, 0, 1)
+        #glTranslatef(-6, -6, 1)
+        
+        painter.save()
+        painter.translate(x, y)
+        painter.rotate(self.rotation)
+        painter.translate(-6, -6)
+        painter.drawPixmap(0, 0, self.pixmap)
+        painter.restore()
     
     def adjust_angle(self, r, body):
         diff = self.history[-1] - self.history[-2]

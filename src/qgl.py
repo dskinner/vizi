@@ -1,51 +1,67 @@
 # -*- coding: utf-8 -*-
 from OpenGL.GL import *
+from OpenGL.GLU import *
 from PyQt4 import QtCore, QtGui, QtOpenGL
-
+from PyQt4.QtGui import QPixmap
 from timer import *
 
 class GLWidget(QtOpenGL.QGLWidget):
     def __init__(self, parent=None):
         super(GLWidget, self).__init__(QtOpenGL.QGLFormat(QtOpenGL.QGL.SampleBuffers), parent)
-        self.setGeometry(0, 0, parent.width(), parent.height())
+        self.setGeometry(0, 0, 1224, 700)
         self.setAutoFillBackground(False)
         
-        self.draw_handlers = []
-        self.update_handlers = []
+        self.pixmap = QPixmap('res/orb_white.png')
         
+        self.draw_handlers = []
+        self.draw_gl_handlers = []
+        self.update_handlers = []
+    
     def initializeGL(self):
+        '''
+        glShadeModel(GL_SMOOTH)
         glClearColor(0., 0., 0., 1.)
         glEnable(GL_BLEND)
         glEnable(GL_LINE_SMOOTH)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+        '''
+        glMatrixMode(GL_PROJECTION)
+        glLoadIdentity()
+        glOrtho(0, self.width(), 0, self.height(), -1, 1)
+        glMatrixMode(GL_MODELVIEW)
+        glClearColor(0.0, 0.0, 0.0, 1.0)
+    
+    def animate(self):
+        self.repaint()
     
     def paintGL(self):
-        # update all relevant objects before drawing
-        '''
         for handler in self.update_handlers:
             handler(time.dt)
-        '''
-        #
-        #
-        glClear(GL_COLOR_BUFFER_BIT)
         
-        painter = QtGui.QPainter(self)
-        #painter.begin(self)
+        glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
         
+        painter = QtGui.QPainter()
+        
+        for handler in self.draw_gl_handlers:
+            handler()
+        
+        painter.begin(self)
         
         fps = QtCore.QString()
-        fps.setNum(time.dt, 'f', 3)
-        self.renderText(20, 30, fps)
+        fps.setNum(time.dt*1000, 'f', 2)
         
-        #for handler in self.draw_handlers:
-        #    handler(painter)
+        painter.setPen(QtGui.QColor(255, 255, 255))
+        painter.drawText(20, 30, fps)
         
-        #painter.end()
+        for handler in self.draw_handlers:
+            glLoadIdentity()
+            handler(painter)
+        
+        painter.end()
     
     def resizeGL(self, width, height):
         glViewport(0, 0, width, height)
-        self.updateGL()
-    '''
+    
     def keyPressEvent(self, event):
         import space
         space.manage.active.key_press(event)
@@ -64,13 +80,9 @@ class GLWidget(QtOpenGL.QGLWidget):
     def mouseReleaseEvent(self, event):
         import space
         space.manage.active.mouse_release(event)
-    '''
 
 
-window = QtGui.QWidget()
-window.resize(1224, 700)
-window.setWindowTitle('VIZI 0.2')
-
-glwidget = GLWidget(window)
+glwidget = GLWidget()
+glwidget.setWindowTitle('VIZI 0.2')
 timer.timeout.connect(glwidget.updateGL)
 
