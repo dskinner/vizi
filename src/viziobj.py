@@ -49,7 +49,7 @@ class ADSR(Orb3):
         self._infobox_layout.width = 400
         self.popout = numpy.zeros(self.snd.GetVectorSize(), dtype='float32')
     
-    def update(self, dt):
+    def update(self):
         maxamp, sustain = self.body.position.x, self.body.position.y
         self.maxamp, self.sustain = maxamp/4, sustain/4
         attack, decay, release, duration = self.four_in_one_control.vals
@@ -89,7 +89,7 @@ class Balance(OrbMultiConnect):
         self.snd.SetInput(*self.links)
         from_obj._output = self
     
-    def update(self, dt):
+    def update(self):
         self.snd.PopOut(self.popout[0:self.snd.GetVectorSize()])
 
 
@@ -103,7 +103,7 @@ class Buzz(Orb2):
         
         self.popout = numpy.zeros(self.snd.GetVectorSize(), dtype='float32')
     
-    def update(self, dt):
+    def update(self):
         frequency = determine_constrained_value(min=0, max=940, \
             val=abs(degrees(self.body.angle)))
         amplitude = abs(self.blue.rotation)
@@ -126,7 +126,7 @@ class Filter(Orb2):
         
         self.popout = numpy.zeros(self.snd.GetVectorSize(), dtype='float32')
     
-    def update(self, dt):
+    def update(self):
         freq = determine_constrained_value(min=0, max=2000, \
                                           val=abs(degrees(self.body.angle)))
         
@@ -154,7 +154,7 @@ class FFT(Orb2):
         self.orange = None # disable orange control
         self.blue.rotation = 0
     
-    def update(self, dt):
+    def update(self):
         scale = determine_constrained_value(0, 1, self.blue.rotation/1000)
         self.snd.SetScale(scale)
         self.snd.PopOut(self.popout[0:self.snd.GetVectorSize()])
@@ -175,7 +175,7 @@ class Gain(Orb2):
         self.orange = None #disable orange control
         self.blue.rotation = 0
     
-    def update(self, dt):
+    def update(self):
         multiplier = self.blue.rotation/2
         
         if multiplier <= 0:
@@ -199,7 +199,7 @@ class HarmTable(Orb2):
         
         self.history = [1, 1]
     
-    def update(self, dt):
+    def update(self):
         print self.orange.rotation
         harm = int(self.orange.rotation)
         phase = int(self.blue.rotation)
@@ -226,7 +226,7 @@ class Hilb(Orb2):
         self.orange = None
         self.blue = None
     
-    def update(self, dt):
+    def update(self):
         self.snd.PopOut(self.popout[0:self.snd.GetVectorSize()])
 
 
@@ -244,7 +244,7 @@ class HiPass(Orb2):
         
         self.orange = None
     
-    def update(self, dt):
+    def update(self):
         cutoff = abs(self.blue.rotation)
         self.snd.SetFreq(cutoff)
         
@@ -266,7 +266,7 @@ class IFFT(Orb2):
         self.orange = None
         self.blue = None
     
-    def update(self, dt):
+    def update(self):
         self.snd.PopOut(self.popout[0:self.snd.GetVectorSize()])
 
 
@@ -283,7 +283,7 @@ class LineIn(Orb2):
         self.orange = None
         self.blue = None
     
-    def update(self, dt):
+    def update(self):
         self.snd.PopOut(self.popout[0:self.snd.GetVectorSize()])
 
 
@@ -303,7 +303,7 @@ class Loop(Orb2):
         super(Loop, self).set_output(obj)
         self.snd.ReSample()
     
-    def update(self, dt):
+    def update(self):
         semitone = int(self.blue.rotation/12)
         
         self.snd.SetPitch(semitone)
@@ -323,7 +323,7 @@ class LoPass(Orb2):
         
         self.orange = None
     
-    def update(self, dt):
+    def update(self):
         cutoff = abs(self.blue.rotation)
         self.snd.SetFreq(cutoff)
         
@@ -344,7 +344,7 @@ class Mixer(OrbMixer):
         
         self.popout = numpy.zeros(self.space.mixer.GetVectorSize(), dtype='float32')
     
-    def update(self, dt):
+    def update(self):
         self.space.mixer.PopOut(self.popout[0:self.space.mixer.GetVectorSize()])
 
 
@@ -357,8 +357,8 @@ class Oscili(Orb2):
         
         self.popout = numpy.zeros(self.snd.GetVectorSize(), dtype='float32')
     
-    def update(self, dt):
-        super(Oscili, self).update(dt)
+    def update(self):
+        super(Oscili, self).update()
         
         frequency = determine_constrained_value(min=0, max=940, \
             val=abs(degrees(self.body.angle)))
@@ -380,7 +380,7 @@ class OsciliHam(Orb2):
         
         self.popout = numpy.zeros(self.snd.GetVectorSize(), dtype='float32')
     
-    def update(self, dt):
+    def update(self):
         frequency = determine_constrained_value(min=0, max=940, \
             val=abs(degrees(self.body.angle)))
         amplitude = abs(self.blue.rotation)
@@ -404,7 +404,7 @@ class OsciliSaw(Orb2):
         
         self.popout = numpy.zeros(self.snd.GetVectorSize(), dtype='float32')
     
-    def update(self, dt):
+    def update(self):
         frequency = determine_constrained_value(min=0, max=940, \
             val=abs(degrees(self.body.angle)))
         amplitude = abs(self.blue.rotation)
@@ -428,7 +428,7 @@ class OsciliBuzz(Orb2):
         
         self.popout = numpy.zeros(self.snd.GetVectorSize(), dtype='float32')
     
-    def update(self, dt):
+    def update(self):
         frequency = determine_constrained_value(min=0, max=940, \
             val=abs(degrees(self.body.angle)))
         amplitude = abs(self.blue.rotation)
@@ -452,7 +452,7 @@ class Phase(Orb2):
         
         self.popout = numpy.zeros(self.snd.GetVectorSize(), dtype='float32')
     
-    def update(self, dt):
+    def update(self):
         freq = determine_constrained_value(min=0, max=440, \
                                           val=abs(self.body.angle*(180/pi)))
         
@@ -478,7 +478,7 @@ class Pitch(Orb2):
         
         self.orange = None #disable orange control
     
-    def update(self, dt):
+    def update(self):
         semitone = int(self.blue.rotation/12)
         
         self.snd.SetPitch(semitone)
@@ -499,7 +499,7 @@ class PVA(Orb2):
         
         self.popout = numpy.zeros(self.snd.GetVectorSize(), dtype='float32')
     
-    def update(self, dt):
+    def update(self):
         scale = determine_constrained_value(0, 1, self.blue.rotation/1000)
         self.snd.SetScale(scale)
         if self.hovering:
@@ -518,7 +518,7 @@ class PVBlur(Orb2):
         
         self.popout = numpy.zeros(self.snd.GetVectorSize(), dtype='float32')
     
-    def update(self, dt):
+    def update(self):
         blur = determine_constrained_value(0, 1, self.blue.rotation/1000)
         #self.snd.SetBlurTime(blur)
         if self.hovering:
@@ -555,7 +555,7 @@ class PVMorph(Orb2):
         self.in_mixer = False
         self.popout = numpy.zeros(self.snd.GetVectorSize(), dtype='float32')
     
-    def update(self, dt):
+    def update(self):
         freq = determine_constrained_value(min=0, max=440, \
                                           val=abs(self.body.angle*(180/pi)))
         
@@ -581,7 +581,7 @@ class PVS(Orb2):
         self.orange = None
         self.blue = None
     
-    def update(self, dt):
+    def update(self):
         self.snd.PopOut(self.popout[0:self.snd.GetVectorSize()])
 
 
@@ -615,7 +615,7 @@ class Ring(OrbMultiConnect):
         l, r = repr(self.links[0]), repr(self.links[1])
         self.update_infobox([l[8:l.index(';')], r[8:r.index(';')]])
     
-    def update(self, dt):
+    def update(self):
         self.snd.PopOut(self.popout[0:self.snd.GetVectorSize()])
 
 
@@ -628,7 +628,7 @@ class SndRead(Orb2):
         
         self.popout = numpy.zeros(self.snd.GetVectorSize(), dtype='float32')
     
-    def update(self, dt):
+    def update(self):
         self.snd.PopOut(self.popout[0:self.snd.GetVectorSize()])
 
 
@@ -662,7 +662,7 @@ class SpecMult(OrbMultiConnect):
         self.update_infobox([l[8:l.index(';')], r[8:r.index(';')]])
         from_obj._output = self
     
-    def update(self, dt):
+    def update(self):
         self.snd.PopOut(self.popout[0:self.snd.GetVectorSize()])
 
 
@@ -679,7 +679,7 @@ class SpecThresh(Orb2):
         self.orange = None # disable orange control
         self.blue.rotation = 0
     
-    def update(self, dt):
+    def update(self):
         threshold = determine_constrained_value(0, 1, self.blue.rotation/1000)
         self.snd.SetThreshold(threshold)
         
@@ -719,7 +719,7 @@ class SpecVoc(OrbMultiConnect):
         self.update_infobox([l[8:l.index(';')], r[8:r.index(';')]])
         from_obj._output = self
     
-    def update(self, dt):
+    def update(self):
         self.snd.PopOut(self.popout[0:self.snd.GetVectorSize()])
 
 
@@ -734,7 +734,7 @@ class VDelay(Orb2):
         
         self.popout = numpy.zeros(self.snd.GetVectorSize(), dtype='float32')
     
-    def update(self, dt):
+    def update(self):
         d = abs(self.body.angle)*.1
         if str(self.snd.GetDelayTime())[:5] != str(d)[:5]:
             if d == 0.:
@@ -778,6 +778,6 @@ class Wave(Orb2):
     def on_connect(self, to_obj):
         self.snd.SetOutput(1, to_obj.snd)
     
-    def update(self, dt):
+    def update(self):
         self.snd.PopOut(self.popout[0:self.snd.GetVectorSize()])
 

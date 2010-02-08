@@ -172,7 +172,6 @@ class Orb2(SoundObject):
         
         # update physics body based on control value
         self.map_physics = {'orange rotation': 'body angle'}
-        glwidget.draw_gl_handlers.append(self.draw_gl)
         
         # useful for debugging during draw
         '''
@@ -234,7 +233,7 @@ class Orb2(SoundObject):
             
     def get_control(self, x, y):
         # read pixels
-        ww, wh = window.width(), window.height()
+        ww, wh = glwidget.width(), glwidget.height()
         pixels = [0., 0., 0., 0.]
         rgba = (GLfloat*len(pixels))(*pixels)
         glReadPixels(x, wh-y, 1, 1, GL_RGBA, GL_FLOAT, rgba)
@@ -252,7 +251,7 @@ class Orb2(SoundObject):
         elif alpha > .05:
             return self.base
     
-    def update(self, dt):
+    def update(self):
         for k, v in self.map_physics.items():
             k = k.split()
             v = v.split()
@@ -279,10 +278,13 @@ class OrbMultiConnect(SoundObject):
     
     def draw(self):
         x, y = self.body.position.x, self.body.position.y
-        
+        y = 700-y
         self.base.draw(x, y)
         self.multi_connect.sprite.set_position(x, y)
         self.center.sprite.set_position(x, y)
+    
+    def draw_gl(self):
+        self.draw_waveform()
     
     def hit_test(self, x, y):
         x2, y2 = self.body.position.x, self.body.position.y
@@ -342,7 +344,11 @@ class OrbMixer(SoundObject):
     
     def draw(self, painter):
         x, y = self.body.position.x, self.body.position.y
+        y = 700-y
         self.base.draw(painter, x, y)
+    
+    def draw_gl(self):
+        self.draw_waveform()
     
     def hit_test(self, x, y):
         x2, y2 = self.body.position.x, self.body.position.y

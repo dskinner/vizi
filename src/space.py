@@ -79,27 +79,23 @@ class ManageSpace(object):
         
         self.line_in_port = 0
         
-        #glwidget.push_handlers(self)
-        
     def activate_space(self, i):
         if self.active is not None:
-            #glwidget.remove_handlers(self.active)
+            self.active.labels.hide()
             glwidget.draw_handlers.remove(self.active.draw)
+            glwidget.draw_gl_handlers.remove(self.active.draw_gl)
         
         self.active = self.spaces[i%len(self.spaces)]
         
+        self.active.labels.show()
         glwidget.draw_handlers.append(self.active.draw)
-        #glwidget.push_handlers(self.active)
+        glwidget.draw_gl_handlers.append(self.active.draw_gl)
         
-    def on_key_press(self, event):
+    def key_press(self, event):
         if event.key() == Qt.Key_Comma:
             self.activate_space(self.spaces.index(self.active) - 1)
         elif event.key() == Qt.Key_Period:
             self.activate_space(self.spaces.index(self.active) +1)
-        elif event.key() == Qt.Key_Y:
-            print 'clipboard:', glwidget.cb.get_text()
-        elif event.key() == Qt.Key_T:
-            print 'copying:', glwidget.cb.set_text('hola')
         
         if self.active is None:
             return
@@ -141,38 +137,26 @@ class Space(object):
     i = 0
     
     def __init__(self):
-        ### label
-        '''
-        self.label = pyglet.text.Label(text='SPACE {0}'.format(self.i), \
-            color=(255,255,255,255), font_size=14)
-        '''
         Space.i += 1
-        '''
-        w1, h1 = glwidget.width(), glwidget.height()
-        w2, h2 = self.label.content_width, self.label.content_height
         
-        x, y = (w1/2)-(w2/2), h1-h2-10
-        
-        self.label.x = x
-        self.label.y = y
-        '''
+        ### space label
+        self.labels = QtGui.QWidget(parent=glwidget)
+        layout = QtGui.QVBoxLayout()
+        font = QtGui.QFont()
+        font.setPointSize(18)
+        font.setBold(True)
+        label = QtGui.QLabel('SPACE {0}'.format(self.i))
+        label.setFont(font)
+        layout.addWidget(label)
+        #layout.addWidget(QtGui.QLabel('of {0}'.format(self.i)))
+        self.labels.setLayout(layout)
+        self.labels.move((1224/2)-(self.labels.width()/2.), 0)
         ###
-        
-        ### update handler
-        glwidget.update_handlers.append(self.update)
-        ###
-        
         
         self.bodies = []
+        timer.timeout.connect(self.update)
         
-        '''
-        self.batch = pyglet.graphics.Batch()
-        self.layer0 = pyglet.graphics.OrderedGroup(0)
-        self.layer1 = pyglet.graphics.OrderedGroup(1)
-        self.layer2 = pyglet.graphics.OrderedGroup(2)
-        self.layer3 = pyglet.graphics.OrderedGroup(3)
-        '''
-        
+        ### setup Mixer
         self.mixer = sndobj.Mixer()
         self.default_in = sndobj.SndIn()
         self.mixer.AddObj(self.default_in) # prevent error out if workspace is empty
@@ -185,34 +169,30 @@ class Space(object):
         sound.mixer_right.AddObj(self.pan.right)
         sound.thread.AddObj(self.mixer)
         sound.thread.AddObj(self.pan)
+        ###
+        
+        ### setup physics space
+        w, h = glwidget.width(), glwidget.height()
         
         self.worldAABB = b2AABB()
         self.worldAABB.lowerBound = (0, 0)
-        self.worldAABB.upperBound = (glwidget.width(), glwidget.height())
+        self.worldAABB.upperBound = (w, h)
         self.gravity = (0, 0)
         self.sleep = True
         self.world = b2World(self.worldAABB, self.gravity, self.sleep)
-        self.master = None
         self.step = True
         
-        self.master = Master(self) # decoratively the master channel for the local mixer
-        self.add_body(self.master)
-        
-        w, h = glwidget.width(), glwidget.height()
         self.add_body(BoundingBox(self, (w/2, 10), (w/2, 5)))
         self.add_body(BoundingBox(self, (w/2, h-10), (w/2, 5)))
         self.add_body(BoundingBox(self, (10, h/2), (5, h/2)))
         self.add_body(BoundingBox(self, (w-10, h/2), (5, h/2)))
+        ###
+        
+        self.master = Master(self) # decoratively the master channel for the local mixer
+        self.add_body(self.master)
         
     def add_body(self, body):
         self.bodies.append(body)
-        
-        if hasattr(body, 'draw'):
-            glwidget.draw_handlers.append(body.draw)
-        if hasattr(body, 'update'):
-            glwidget.update_handlers.append(body.update)
-        # TODO this probably needs to be fixed
-        #glwidget.push_handlers(body)
         
         if hasattr(body, 'snd') and not isinstance(body.snd, sndobj.Mixer) \
             and not isinstance(body.snd, sndobj.SndWave):
@@ -220,25 +200,22 @@ class Space(object):
             self.mixer.AddObj(body.snd)
     
     def draw(self, painter):
-        self.master.draw(painter)
-        '''
         for body in self.bodies:
-            if hasattr(body, 'draw_waveform'):
-                body.draw_waveform(painter)
             if hasattr(body, 'draw'):
                 body.draw(painter)
-        #self.batch.draw()
-        '''
-        '''
-        for body in self.bodies:
-            if hasattr(body, 'draw_infobox') and body.hovering:
-                body.draw_infobox(painter)
-        self.label.draw()
-        '''
     
-    def update(self, dt):
+    def draw_gl(self):
+        for body in self.bodies:
+            if hasattr(body, 'draw_gl'):
+                body.draw_gl()
+    
+    def update(self):
         if self.step:
-            self.world.Step(dt*2.5, 10, 8)
+            self.world.Step(time.dt*2.5, 10, 8)
+        
+        for body in self.bodies:
+            if hasattr(body, 'update'):
+                body.update()
         
         # cant delete objects from an inactive workspace, atm anyway
         if manage.active is not self:
@@ -246,12 +223,6 @@ class Space(object):
         
         for body in self.bodies:
             if hasattr(body, 'destroy') and body.destroy:
-                if hasattr(body, 'draw'):
-                    pass#glwidget.draw_handlers.remove(body.draw)
-                if hasattr(body, 'update'):
-                    glwidget.update_handlers.remove(body.update)
-                #glwidget.remove_handlers(body)
-                
                 if hasattr(body, 'in_mixer') and body.in_mixer:
                     self.mixer.DeleteObj(body.snd)
                 
@@ -263,16 +234,18 @@ class Space(object):
                 self.bodies.remove(body)
 
     def key_press(self, event):
-        if event.key() == key.QUOTELEFT:
+        if event.key() == QtCore.Qt.Key_QuoteLeft:
+            print 'worked!'
             for body in self.bodies:
                 if hasattr(body, 'hovering') and body.hovering:
+                    print 'even further!'
                     if body.processing:
                         body.snd.Disable()
                         body.processing = False
                     else:
                         body.snd.Enable()
                         body.processing = True
-        if event.key() == key.ASCIITILDE:
+        if event.key() == QtCore.Qt.Key_AsciiTilde:
             for body in self.bodies:
                 if hasattr(body, 'hovering') and body.hovering:
                     if body.in_mixer:
@@ -281,20 +254,21 @@ class Space(object):
                     else:
                         self.mixer.AddObj(body.snd)
                         body.in_mixer = True
-        if event.key() == key.F11:
+        if event.key() == QtCore.Qt.Key_F11:
             glwidget.set_fullscreen(not glwidget.fullscreen)
-        if event.key() == key.P:
+        if event.key() == QtCore.Qt.Key_P:
+            print 'whatup!'
             self.step = not self.step
-        if event.key() == key.DELETE:
+        if event.key() == QtCore.Qt.Key_Delete:
             for body in self.bodies:
                 if hasattr(body, 'hovering') and body.hovering:
                     body.destroy = True
-        if event.key() == key.K:
+        if event.key() == QtCore.Qt.Key_K:
             self.pan_val -= 1
             self.pan.SetPan((self.pan_val/10)+.01)
             print 'set pan to: ', (self.pan_val/10)+.01
             print self.pan.GetError()
-        if event.key() == key.L:
+        if event.key() == QtCore.Qt.Key_L:
             self.pan_val += 1
             self.pan.SetPan((self.pan_val/10)-.01)
             print 'set pan to: ', (self.pan_val/10)-.01
@@ -322,7 +296,7 @@ class Space(object):
                         body.body.WakeUp()
                     else:
                         if hasattr(body, 'mouse_press'):
-                            body.mouse_press(x, y, symbol, modifiers)
+                            body.mouse_press(event)
                         body.mouseJoint = True
         if event.buttons() & QtCore.Qt.RightButton:
             for body in self.bodies:
@@ -376,8 +350,8 @@ class Space(object):
     
     def mouse_move(self, event):
         x, y = event.x(), event.y()
-        y = 700-y # TODO stop hacking upside Qt Canvas
-        dx, dy = glwidget.lastPos.x(), glwidget.lastPos.y()
+        y = 700-y # TODO stop hacking upside-down Qt Canvas
+        dx, dy = glwidget.last_pos
         
         for body in self.bodies:
             if hasattr(body, 'mouseJoint') and body.mouseJoint:
@@ -387,7 +361,7 @@ class Space(object):
                     if hasattr(body, 'active_control') and body.active_control is not None:
                         body.mouse_move(event)
                         
-            if hasattr(body, 'hit_test') and body.hit_test(x, y):
+            if hasattr(body, 'hit_test') and body.hit_test(x, 700-y):
                 pixels = [0.]
                 alpha = (GLfloat*len(pixels))(*pixels)
                 glReadPixels(x, y, 1, 1, GL_ALPHA, GL_FLOAT, alpha)

@@ -33,23 +33,15 @@ from utils import *
 from qgl import *
 
 class ControlDecorative(object):
-    def __init__(self):
-        pass
+    pass
 
 
 class ControlPosition(object):
-    def __init__(self):
-        pass
-    
-    def adjust_position(self, dx, dy, body):
-        '''used by subclass to perform action to adjust position'''
-        pass
-    
     def mouse_move(self, event, body):
         x, y = event.x(), event.y()
-        x2, y2 = window.last_pos
+        x2, y2 = glwidget.last_pos
         dx, dy = x-x2, y-y2
-        self.adjust_position(dx, dy, body)
+        body.position = (x+dx, y+dy)
 
 
 class ControlRotate(object):
@@ -102,11 +94,6 @@ class Base(ControlPosition):
     def __init__(self):
         super(Base, self).__init__()
     
-    def adjust_position(self, dx, dy, body):
-        print dx, dy
-        x, y = body.position.x, body.position.y
-        body.position = (x+dx, y+dy)
-    
     def draw(self, painter, x, y):
         glLoadIdentity()
         w, h = self.pixmap.width()/2., self.pixmap.height()/2.
@@ -125,10 +112,6 @@ class Blue(ControlRotate):
     
     def draw(self, painter, x, y):
         w, h = self.pixmap.width(), self.pixmap.height()
-        
-        #glTranslatef(x, y, 1)
-        #glRotatef(self.rotation, 0, 0, 1)
-        #glTranslatef(-6, -6, 1)
         
         painter.save()
         painter.translate(x, y)
