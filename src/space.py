@@ -27,7 +27,7 @@ from __future__ import division
 from Box2D import *
 from math import degrees
 from PyQt4 import QtCore
-from PyQt4.QtCore import Qt
+from PyQt4.QtCore import Qt, SIGNAL, QObject
 from PyQt4.QtGui import QPixmap
 
 try:
@@ -81,13 +81,13 @@ class ManageSpace(object):
         
     def activate_space(self, i):
         if self.active is not None:
-            self.active.labels.hide()
+            #self.active.labels.hide()
             glwidget.draw_handlers.remove(self.active.draw)
             glwidget.draw_gl_handlers.remove(self.active.draw_gl)
         
         self.active = self.spaces[i%len(self.spaces)]
         
-        self.active.labels.show()
+        #self.active.labels.show()
         glwidget.draw_handlers.append(self.active.draw)
         glwidget.draw_gl_handlers.append(self.active.draw_gl)
         
@@ -95,7 +95,7 @@ class ManageSpace(object):
         if event.key() == Qt.Key_Comma:
             self.activate_space(self.spaces.index(self.active) - 1)
         elif event.key() == Qt.Key_Period:
-            self.activate_space(self.spaces.index(self.active) +1)
+            self.activate_space(self.spaces.index(self.active) + 1)
         
         if self.active is None:
             return
@@ -134,23 +134,40 @@ class Master(object):
 
 
 class Space(object):
+    pixmap = QPixmap('res/space_info_2.png')
     i = 0
     
     def __init__(self):
         Space.i += 1
         
         ### space label
+        '''
+        self.label = QtCore.QString('Mixer {0}'.format(self.i))
+        '''
+        self.font = QtGui.QFont()
+        self.font.setPointSize(12)
+        self.font.setBold(True)
+        #self.menu_space = MenuSpace(glwidget)
+        '''
         self.labels = QtGui.QWidget(parent=glwidget)
-        layout = QtGui.QVBoxLayout()
-        font = QtGui.QFont()
-        font.setPointSize(18)
-        font.setBold(True)
-        label = QtGui.QLabel('SPACE {0}'.format(self.i))
-        label.setFont(font)
+        self.labels.setStyleSheet('margin: 0px; padding: 10px; background-color: #242424; color: white;')
+        self.left_button = QtGui.QPushButton('L')
+        self.right_button = QtGui.QPushButton('R')
+        layout = QtGui.QHBoxLayout()
+        label = QtGui.QLabel('Mixer {0}'.format(self.i))
+        label.setFont(self.font)
+        label.setStyleSheet('padding-right: 0px;')
+        layout.addWidget(self.left_button)
         layout.addWidget(label)
-        #layout.addWidget(QtGui.QLabel('of {0}'.format(self.i)))
+        
+        self.label_total = QtGui.QLabel('of {0}'.format(self.i))
+        self.label_total.setStyleSheet('padding-left: -3px; padding-top: 12px;')
+        layout.addWidget(self.label_total)
+        layout.addWidget(self.right_button)
+        
         self.labels.setLayout(layout)
-        self.labels.move((1224/2)-(self.labels.width()/2.), 0)
+        self.labels.move((1224/2)-(190/2.), 0)
+        '''
         ###
         
         self.bodies = []
@@ -200,9 +217,14 @@ class Space(object):
             self.mixer.AddObj(body.snd)
     
     def draw(self, painter):
+        # draw vizi objects
         for body in self.bodies:
             if hasattr(body, 'draw'):
                 body.draw(painter)
+        # draw space_info
+        #self.label_total.setText('of {0}'.format(self.i))
+        painter.save()
+        painter.restore()
     
     def draw_gl(self):
         for body in self.bodies:
