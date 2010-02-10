@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 from OpenGL.GL import *
 from PyQt4 import QtCore, QtGui, QtOpenGL
+from PyQt4.QtCore import SIGNAL
 from PyQt4.QtGui import QPixmap
 
 from timer import *
+from app import *
 
 fmt = QtOpenGL.QGLFormat()
 fmt.setAlpha(True)
@@ -39,6 +41,7 @@ class GLWidget(QtOpenGL.QGLWidget):
         
         painter = QtGui.QPainter()
         painter.begin(self)
+        painter.setRenderHint(QtGui.QPainter.SmoothPixmapTransform, True)
         
         ### draw FPS
         fps = QtCore.QString()

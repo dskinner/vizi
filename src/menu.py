@@ -1,14 +1,33 @@
 # -*- coding: utf-8 -*-
 from PyQt4 import QtCore, QtGui
-from PyQt4.QtCore import SIGNAL
+from PyQt4.QtCore import SIGNAL, QObject
 
 import viziobj
 import space
 from qgl import glwidget
+from app import app
 
-class MenuLabel(QtGui.QLabel):
+import random
+
+class MyFilter(QtCore.QObject):
+    def eventFilter(self, obj, event):
+        if event.type() == QtCore.QEvent.HoverEnter:
+            print 'focused', obj.help_text
+            left_panel.label_help.setText(obj.help_text)
+        return QtGui.QWidget.eventFilter(self, obj, event)
+
+class MenuLabel(QtGui.QPushButton):
+    def __init__(self, parent=None):
+        QtGui.QPushButton.__init__(self, parent)
+        self.setFlat(True)
+        self.setStyleSheet('text-align: left;')
+        self.event_filter = MyFilter()
+        self.installEventFilter(self.event_filter)
+        self.help_text = 'this is some help text to do some helping, lorem ipsum et so on' + str(random.randint(0, 100))
+    
     def mouseReleaseEvent(self, event):
-        space.manage.active.add_body(getattr(viziobj, str(self.text()))(position=(150, 150)))
+        space.manage.active.add_body(getattr(viziobj, str(self.text()))(position=(350, 150)))
+        space_menu.update_label()
 
 
 class Menu(QtGui.QWidget):
@@ -89,11 +108,34 @@ class MenuSpace(QtGui.QWidget):
 
 
 menu = Menu()
-tabs = QtGui.QTabWidget(glwidget)
-tabs.setStyleSheet('background-color: #242424; color: white;')
+scroll_area = QtGui.QScrollArea()
+scroll_area.setWidget(menu)
+
+
+tabs = QtGui.QTabWidget()
 tabs.setTabPosition(2)
-tabs.addTab(menu, 'Sound Objects')
+tabs.addTab(scroll_area, 'Sound Objects')
+
+
+class LeftPanel(QtGui.QWidget):
+    def __init__(self, parent=None):
+        QtGui.QWidget.__init__(self, parent)
+        self.setStyleSheet('background-color: #242424; color: white;')
+        self.setGeometry(0, 0, 190, 700)
+        
+        self.label_container = QtGui.QWidget()
+        self.label_container.setFixedHeight(150)
+        self.label_help = QtGui.QLabel('this is a test', parent=self.label_container)
+        self.label_help.setMinimumSize(140, 140)
+        self.label_help.setWordWrap(True)
+        self.label_help.setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft)
+        
+        layout = QtGui.QVBoxLayout()
+        layout.addWidget(tabs)
+        layout.addWidget(self.label_container)
+        self.setLayout(layout)
+
+
+left_panel = LeftPanel(glwidget)
 
 space_menu = MenuSpace(glwidget)
-space_menu.connect(menu.labels[5], SIGNAL('clicked(bool)'), space_menu.update_label)
-print menu.labels[5].text()
