@@ -5,7 +5,6 @@ from PyQt4.QtCore import SIGNAL
 from PyQt4.QtGui import QPixmap
 
 from timer import *
-from app import *
 
 fmt = QtOpenGL.QGLFormat()
 fmt.setAlpha(True)
@@ -16,10 +15,13 @@ class GLWidget(QtOpenGL.QGLWidget):
         super(GLWidget, self).__init__(fmt, parent)
         self.setGeometry(0, 0, 1224, 700)
         self.setAutoFillBackground(False)
+        self.setWindowTitle('VIZI 0.2')
         
         self.draw_handlers = []
         self.draw_gl_handlers = []
         self.update_handlers = []
+        
+        timer.timeout.connect(self.updateGL)
     
     def initializeGL(self):
         glMatrixMode(GL_PROJECTION)
@@ -39,16 +41,10 @@ class GLWidget(QtOpenGL.QGLWidget):
         for handler in self.draw_gl_handlers:
             handler()
         
-        painter = QtGui.QPainter()
-        painter.begin(self)
+        painter = QtGui.QPainter(self)
         painter.setRenderHint(QtGui.QPainter.SmoothPixmapTransform, True)
         
-        ### draw FPS
-        fps = QtCore.QString()
-        fps.setNum(1000./(time.dt*1000.), 'f', 3)
-        painter.setPen(QtGui.QColor(255, 255, 255))
-        painter.drawText(20, 670, fps)
-        ###
+        time.draw_fps(painter, 300, 30, QtGui.QColor(255, 255, 255))
         
         for handler in self.draw_handlers:
             handler(painter)
@@ -65,7 +61,6 @@ class GLWidget(QtOpenGL.QGLWidget):
     def keyPressEvent(self, event):
         import space
         space.manage.active.key_press(event)
-        space.manage.key_press(event)
     
     def mousePressEvent(self, event):
         import space
@@ -83,6 +78,4 @@ class GLWidget(QtOpenGL.QGLWidget):
 
 
 glwidget = GLWidget()
-glwidget.setWindowTitle('VIZI 0.2')
-timer.timeout.connect(glwidget.updateGL)
 

@@ -401,3 +401,35 @@ class OrbMixer(SoundObject):
 
 class Orb3(object):
     pass
+
+
+class Master(object):
+    '''A decoration to represent master channel of local mixer'''
+    pixmap = QPixmap('res/orb_white.png')
+    
+    def __init__(self, world):
+        self.pixmap = self.pixmap.scaledToWidth(self.pixmap.width()/2.)
+        
+        self.body_def = b2BodyDef()
+        self.body_def.position = (glwidget.width()/2, glwidget.height()/2)
+        self.body = world.world.CreateBody(self.body_def)
+        
+        self.circle_def = b2CircleDef()
+        self.circle_def.friction = 0.9
+        self.circle_def.radius = (self.pixmap.width()/2)-13
+        self.circle = self.body.CreateShape(self.circle_def)
+        
+        self.inputs = []
+        self.output = None
+    
+    def draw(self, painter):
+        x, y = self.body.position.x, self.body.position.y
+        w, h = self.pixmap.width()/2, self.pixmap.height()/2
+        painter.drawPixmap(x-w, y-h, self.pixmap)
+    
+    def hit_test(self, x, y):
+        x2, y2 = self.body.position.x, self.body.position.y
+        w, h = self.pixmap.width(), self.pixmap.height()
+        if x in range(int(x2-w), int(x2+w)) and y in range(int(y2-h), int(y2+h)):
+            return True
+        return False

@@ -1,0 +1,93 @@
+ADSR:
+    - envelope generator
+    - This object generates an attack - decay - sustain - release shaped signal at the output. Alternatively, it can similarly shape an input signal, acting as a modifier. Other parameters to it are max amplitude and total duration of the envelope period, after which the whole cycle is repeated.
+Balance:
+    - balance/envelope follower
+    - Objects of this class balance two signals. They measure the rms power of the second input signal (the control signal), by a combination of rectification and low-pass filtering. That information is used to control the gain of the first signal. This signal is then fed to the output of the object.
+Buzz:
+    - band-limited pulse generator
+    - This object is a broadband signal generator, implemented using a discrete summation formula. It basically generates a pulse wave with an user-specified number of harmonics. Other required parameters are fundamental frequency and amplitude, which can be controlled by the output of other SndObj-derived objects.
+FFT:
+    - short-time FFT
+    - The FFT class implements short-time fourier transform (STFT). An input signal is windowed, transformed by the FFT and scaled. This process happens at regular intervals, determined by the hopsize, which is equivalent to the time-domain vectorsize. The output of this class holds a vector with the size of the FFT containing a real, imaginary pair for every frequency point on the positive side of the spectrum. ...
+Filter:
+    - fixed resonator
+    - lorem ipsum
+Gain:
+    - gain attenuation/boost
+    - lorem ipsum
+HarmTable:
+    - harmonic functions
+    - lorem ipsum
+HiPass:
+    - 1st order high-pass
+    - lorem ipsum
+Hilb:
+    - Hilbert transform
+    - lorem ipsum
+IFFT:
+    - short-time IFFT
+    - lorem ipsum
+LineIn:
+    - lorem ipsum
+    - lorem ipsum
+LoPass:
+    - 1st order low-pass
+    - lorem ipsum
+Loop:
+    - lorem ipsum
+    - lorem ipsum
+Mixer:
+    - lorem ipsum
+    - lorem ipsum
+Oscili:
+    - interpolating oscillator
+    - lorem ipsum
+OsciliSaw:
+    - lorem ipsum
+    - lorem ipsum
+OsciliBuzz:
+    - lorem ipsum
+    - lorem ipsum
+OsciliHam:
+    - lorem ipsum
+    - lorem ipsum
+PVA:
+    - phase vocoder analysis
+    - lorem ipsum
+PVBlur:
+    - blurring of PV spectral data
+    - lorem ipsum
+PVMorph:
+    - phase vocoder morphing
+    - lorem ipsum
+PVS:
+    - phase vocoder synthesis
+    - lorem ipsum
+Phase:
+    - phase increment generator
+    - lorem ipsum
+Pitch:
+    - pitch shifter
+    - lorem ipsum
+Ring:
+    - general purpose multiplier
+    - lorem ipsum
+SndRead:
+    - sound file reader
+    - lorem ipsum
+SpecMult:
+    - complex multiplication of spectra
+    - lorem ipsum
+SpecThresh:
+    - thresholding
+    - lorem ipsum
+SpecVoc:
+    - cross-synthesis of spectra
+    - lorem ipsum
+VDelay:
+    - variable delay line
+    - lorem ipsum
+Wave:
+    - RIFF-Wave soundfile IO
+    - lorem ipsum

@@ -1,43 +1,6 @@
 # -*- coding: utf-8 -*-
-from PyQt4 import QtGui, QtCore
+from PyQt4 import QtGui
 import sys
 
 app = QtGui.QApplication(sys.argv)
-
-app.setStyleSheet('''
-  QScrollBar:vertical {
-      border: 2px solid #242424;
-      background: #77b7ff;
-      width: 8px;
-      margin: 8px 0 8px 0;
-  }
-  QScrollBar::handle:vertical {
-      background: #77b7ff;
-      min-height: 20px;
-  }
-  QScrollBar::add-line:vertical {
-      border: 2px solid #242424;
-      background: #77b7ff;
-      height: 10px;
-      subcontrol-position: bottom;
-      subcontrol-origin: margin;
-  }
-
-  QScrollBar::sub-line:vertical {
-      border: 2px solid #242424;
-      background: #77b7ff;
-      height: 10px;
-      subcontrol-position: top;
-      subcontrol-origin: margin;
-  }
-  QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical {
-      border: 2px solid #242424;
-      width: 8px;
-      height: 6px;
-      background: 77b7ff;
-  }
-
-  QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
-      background: none;
-  }
-''')
+app.setStyleSheet(open('app.css').read())

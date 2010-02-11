@@ -8,22 +8,24 @@ from qgl import glwidget
 from app import app
 
 import random
+import yaml
 
 class MyFilter(QtCore.QObject):
     def eventFilter(self, obj, event):
         if event.type() == QtCore.QEvent.HoverEnter:
-            print 'focused', obj.help_text
             left_panel.label_help.setText(obj.help_text)
         return QtGui.QWidget.eventFilter(self, obj, event)
 
 class MenuLabel(QtGui.QPushButton):
-    def __init__(self, parent=None):
-        QtGui.QPushButton.__init__(self, parent)
+    def __init__(self, text, tooltip, description):
+        QtGui.QPushButton.__init__(self, text)
+        self.setToolTip(tooltip)
+        self.help_text = description
+        
         self.setFlat(True)
         self.setStyleSheet('text-align: left;')
         self.event_filter = MyFilter()
         self.installEventFilter(self.event_filter)
-        self.help_text = 'this is some help text to do some helping, lorem ipsum et so on' + str(random.randint(0, 100))
     
     def mouseReleaseEvent(self, event):
         space.manage.active.add_body(getattr(viziobj, str(self.text()))(position=(350, 150)))
@@ -33,38 +35,9 @@ class MenuLabel(QtGui.QPushButton):
 class Menu(QtGui.QWidget):
     def __init__(self, parent=None):
         QtGui.QWidget.__init__(self, parent)
-        self.labels = [ 'ADSR',
-                        'Balance',
-                        'Buzz',
-                        'FFT',
-                        'Filter',
-                        'Gain',
-                        'HarmTable',
-                        'HiPass',
-                        'Hilb',
-                        'IFFT',
-                        'LineIn',
-                        'LoPass',
-                        'Loop',
-                        'Mixer',
-                        'Oscili',
-                        'OsciliSaw',
-                        'OsciliBuzz',
-                        'OsciliHam',
-                        'PVA',
-                        'PVBlur',
-                        'PVMorph',
-                        'PVS',
-                        'Phase',
-                        'Pitch',
-                        'Ring',
-                        'SndRead',
-                        'SpecMult',
-                        'SpecThresh',
-                        'SpecVoc',
-                        'VDelay',
-                        'Wave']
-        self.labels = [MenuLabel(x) for x in self.labels]
+        self.labels = []
+        for k, v in sorted(yaml.load(open('sound_objects.yaml')).items()):
+            self.labels.append(MenuLabel(k, v[0], v[1]))
         layout = QtGui.QVBoxLayout()
         for l in self.labels:
             layout.addWidget(l)
@@ -102,7 +75,6 @@ class MenuSpace(QtGui.QWidget):
         self.update_label()
     
     def update_label(self, b=True):
-        print 'calling update_label'
         self.label.setText('Mixer {0}'.format((space.manage.spaces.index(space.manage.active)+1)))
         self.total.setText(' of {0}'.format(space.Space.i))
 
@@ -115,6 +87,9 @@ scroll_area.setWidget(menu)
 tabs = QtGui.QTabWidget()
 tabs.setTabPosition(2)
 tabs.addTab(scroll_area, 'Sound Objects')
+tabs.addTab(QtGui.QWidget(), 'Filesystem')
+tabs.addTab(QtGui.QWidget(), 'Projects')
+tabs.addTab(QtGui.QWidget(), 'Mixer States')
 
 
 class LeftPanel(QtGui.QWidget):
@@ -126,7 +101,7 @@ class LeftPanel(QtGui.QWidget):
         self.label_container = QtGui.QWidget()
         self.label_container.setFixedHeight(150)
         self.label_help = QtGui.QLabel('this is a test', parent=self.label_container)
-        self.label_help.setMinimumSize(140, 140)
+        self.label_help.setMinimumSize(170, 140)
         self.label_help.setWordWrap(True)
         self.label_help.setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft)
         
