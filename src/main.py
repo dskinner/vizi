@@ -4,8 +4,8 @@
 from app import *
 from timer import *
 from qgl import *
-
 import space
+
 from viziobj import *
 import menu
 from sound import *

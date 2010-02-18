@@ -51,7 +51,9 @@ class MenuSpace(QtGui.QWidget):
         self.move((1224/2)-(190/2.), 0)
         
         self.label = QtGui.QLabel('Mixer {0}'.format('1'))
+        self.label.setStyleSheet('font-size: 12pt; font-weight: bold; margin: 0 0 0 10px; padding: 0;')
         self.total = QtGui.QLabel(' of {0}'.format('1'))
+        self.total.setStyleSheet('margin: 0; padding: 0;')
         
         self.left_button = QtGui.QPushButton('L')
         self.connect(self.left_button, SIGNAL('clicked(bool)'), self.left_click)
@@ -59,12 +61,19 @@ class MenuSpace(QtGui.QWidget):
         self.right_button = QtGui.QPushButton('R')
         self.connect(self.right_button, SIGNAL('clicked(bool)'), self.right_click)
         
+        self.physics_sim = QtGui.QCheckBox('Physics')
+        self.connect(self.physics_sim, SIGNAL('stateChanged(int)'), self.set_physics_sim)
+        
         layout = QtGui.QHBoxLayout()
         layout.addWidget(self.left_button)
         layout.addWidget(self.label)
         layout.addWidget(self.total)
         layout.addWidget(self.right_button)
+        layout.addWidget(self.physics_sim)
         self.setLayout(layout)
+    
+    def set_physics_sim(self, i):
+        space.manage.active.step = i and True or False
     
     def left_click(self, b):
         space.manage.activate_space(space.manage.spaces.index(space.manage.active) - 1)
@@ -100,6 +109,7 @@ class LeftPanel(QtGui.QWidget):
         
         self.label_container = QtGui.QWidget()
         self.label_container.setFixedHeight(150)
+        self.label_container.setStyleSheet(':focus { border: none; }')
         self.label_help = QtGui.QLabel('this is a test', parent=self.label_container)
         self.label_help.setMinimumSize(170, 140)
         self.label_help.setWordWrap(True)

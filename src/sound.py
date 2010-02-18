@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-----------------------------------------------------------------------------
 #
 #    Copyright (C) 2009  Daniel Skinner
@@ -17,11 +18,6 @@
 #
 #-----------------------------------------------------------------------------
 
-'''
-Created on Jun 6, 2009
-
-@author: daniel
-'''
 try:
     import sndobj
 except:
@@ -40,8 +36,8 @@ class Sound(object):
         self.thread = sndobj.SndThread()
         self.mixer_left = sndobj.Mixer()
         self.mixer_right = sndobj.Mixer()
-	self.thread.AddObj(self.mixer_left)
-	self.thread.AddObj(self.mixer_right)
+        self.thread.AddObj(self.mixer_left)
+        self.thread.AddObj(self.mixer_right)
         if interface == 'jack': 
             self.gain_left = sndobj.Gain(0., self.mixer_left)
             self.gain_left.SetGainM(1./32768)

@@ -19,6 +19,7 @@
 #-----------------------------------------------------------------------------
 
 from __future__ import division
+from OpenGL.GL import *
 from Box2D import *
 from math import degrees
 from PyQt4 import QtCore
@@ -32,8 +33,8 @@ except:
 
 from sound import *
 from timer import *
-from qgl import glwidget
 from orb2 import Master
+import menu
 
 class BoundingBox(object):
     def __init__(self, world, position, size):
@@ -72,14 +73,8 @@ class ManageSpace(object):
         self.line_in_port = 0
         
     def activate_space(self, i):
-        if self.active is not None:
-            glwidget.draw_handlers.remove(self.active.draw)
-            glwidget.draw_gl_handlers.remove(self.active.draw_gl)
-        
         self.active = self.spaces[i%len(self.spaces)]
-        
-        glwidget.draw_handlers.append(self.active.draw)
-        glwidget.draw_gl_handlers.append(self.active.draw_gl)
+        menu.space_menu.physics_sim.setCheckState(self.active.step and 2 or 0)
 
 
 class Space(object):
@@ -105,7 +100,7 @@ class Space(object):
         ###
         
         ### setup physics space
-        w, h = glwidget.width(), glwidget.height()
+        w, h = 1224, 700
         
         self.worldAABB = b2AABB()
         self.worldAABB.lowerBound = (0, 0)
@@ -169,141 +164,6 @@ class Space(object):
                 
                 self.bodies.remove(body)
         ###
-
-    def key_press(self, event):
-        if event.key() == QtCore.Qt.Key_QuoteLeft:
-            for body in self.bodies:
-                if hasattr(body, 'hovering') and body.hovering:
-                    if body.processing:
-                        body.snd.Disable()
-                        body.processing = False
-                    else:
-                        body.snd.Enable()
-                        body.processing = True
-        if event.key() == QtCore.Qt.Key_AsciiTilde:
-            for body in self.bodies:
-                if hasattr(body, 'hovering') and body.hovering:
-                    if body.in_mixer:
-                        self.mixer.DeleteObj(body.snd)
-                        body.in_mixer = False
-                    else:
-                        self.mixer.AddObj(body.snd)
-                        body.in_mixer = True
-        if event.key() == QtCore.Qt.Key_F11:
-            glwidget.set_fullscreen(not glwidget.fullscreen)
-        if event.key() == QtCore.Qt.Key_P:
-            self.step = not self.step
-        if event.key() == QtCore.Qt.Key_Delete:
-            for body in self.bodies:
-                if hasattr(body, 'hovering') and body.hovering:
-                    body.destroy = True
-        if event.key() == QtCore.Qt.Key_K:
-            self.pan_val -= 1
-            self.pan.SetPan((self.pan_val/10)+.01)
-            print 'set pan to: ', (self.pan_val/10)+.01
-            print self.pan.GetError()
-        if event.key() == QtCore.Qt.Key_L:
-            self.pan_val += 1
-            self.pan.SetPan((self.pan_val/10)-.01)
-            print 'set pan to: ', (self.pan_val/10)-.01
-            print self.pan.GetError()
-    
-    def mouse_press(self, event):
-        x, y = event.x(), event.y()
-        y = 700-y
-        if event.buttons() & QtCore.Qt.MidButton:
-            for body in self.bodies:
-                if hasattr(body, 'hit_test') and body.hit_test(x, y):
-                    print('links: ', body.links)
-                    print('error: ', body.snd.GetError(), body.snd.ErrorMessage())
-                    body.snd.GetInput()
-        if event.buttons() & QtCore.Qt.LeftButton:
-            for body in self.bodies:
-                if hasattr(body, 'hit_test') and body.hit_test(x, y):
-                    if self.step:
-                        md = b2MouseJointDef()
-                        md.body1   = self.world.GetGroundBody()
-                        md.body2   = body.body
-                        md.target  = (x, y)
-                        md.maxForce= 1000.0 * body.body.GetMass()
-                        body.mouseJoint = self.world.CreateJoint(md).getAsType()
-                        body.body.WakeUp()
-                    else:
-                        if hasattr(body, 'mouse_press'):
-                            body.mouse_press(event)
-                        body.mouseJoint = True
-        if event.buttons() & QtCore.Qt.RightButton:
-            for body in self.bodies:
-                if hasattr(body, 'hit_test') and body.hit_test(x, y):
-                    # prepare to relink to something else
-                    body.linking = True
-    
-    def mouse_release(self, event):
-        x, y = event.x(), event.y()
-        y = 700-y
-        if int(event.button()) == int(QtCore.Qt.LeftButton):
-            for body in self.bodies:
-                if hasattr(body, 'mouseJoint') and body.mouseJoint:
-                    if self.step:
-                        self.world.DestroyJoint(body.mouseJoint)
-                        body.mouseJoint = None
-                    else:
-                        body.mouseJoint = False
-                        if hasattr(body, 'control') and body.control is not None:
-                            body.control = None
-        if int(event.button()) == int(QtCore.Qt.RightButton):
-            linking = []
-            dest = None
-            for body in self.bodies:
-                if hasattr(body, 'linking') and body.linking:
-                    linking.append(body)
-                if hasattr(body, 'hit_test') and body.hit_test(x, y):
-                    dest = body
-            
-            if dest is None:
-                print('No destination, stopped linking')
-                for l in linking:
-                    l.linking = False
-                return False
-            
-            if len(linking) is 0:
-                print('Found no objects to link, stopped linking')
-                return False
-            
-            for l in linking:
-                if hasattr(dest, 'on_connect_input'):
-                    dest.on_connect_input(l, x, y)
-                    l.linking = False
-                    continue
-                if hasattr(l, 'on_connect'):
-                    l.on_connect(dest)
-                    l.linking = False
-                    continue
-                l.output = dest
-                l.linking = False
-    
-    def mouse_move(self, event):
-        x, y = event.x(), event.y()
-        y = 700-y # TODO stop hacking upside-down Qt Canvas
-        dx, dy = glwidget.last_pos
-        
-        for body in self.bodies:
-            if hasattr(body, 'mouseJoint') and body.mouseJoint:
-                if self.step:
-                    body.mouseJoint.SetTarget((x, y))
-                else:
-                    if hasattr(body, 'active_control') and body.active_control is not None:
-                        body.mouse_move(event)
-                        
-            if hasattr(body, 'hit_test') and body.hit_test(x, 700-y):
-                pixels = [0.]
-                alpha = (GLfloat*len(pixels))(*pixels)
-                glReadPixels(x, y, 1, 1, GL_ALPHA, GL_FLOAT, alpha)
-                if alpha[0] > .05:
-                    body.hovering = True
-            elif hasattr(body, 'hit_test') and hasattr(body, 'hovering') and body.hovering is True:
-                body.hovering = False
-
 
 manage = ManageSpace()
 

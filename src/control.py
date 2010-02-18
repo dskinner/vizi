@@ -18,12 +18,6 @@
 #
 #-----------------------------------------------------------------------------
 
-'''
-Created on May 31, 2009
-
-@author: daniel
-@todo: review approach to diff's
-'''
 from __future__ import division
 from math import atan2, degrees, radians, sqrt, sin, cos
 import pyglet
@@ -145,6 +139,10 @@ class Center2(ControlDecorative):
     
     def __init__(self):
         super(Center2, self).__init__()
+    
+    def draw(self, painter, x, y):
+        w, h = self.pixmap.width()/2., self.pixmap.height()/2.
+        painter.drawPixmap(x-w, y-h, self.pixmap)
 
 
 class Orange(ControlRotate):
@@ -177,15 +175,14 @@ class Orange(ControlRotate):
 
 
 class MultiConnect(ControlDecorative):
-    image = pyglet.image.load('res/orb_multi_connect.png')
+    pixmap = QPixmap('res/orb_multi_connect.png')
     
-    def __init__(self, batch, group):
+    def __init__(self):
         super(MultiConnect, self).__init__()
-        w, h = self.image.width, self.image.height
-        self.image.anchor_x = int(w/2)
-        self.image.anchor_y = int(h/2)
-        self.sprite = pyglet.sprite.Sprite(self.image, batch=batch, group=group)
-
+        
+    def draw(self, painter, x, y):
+        w, h = self.pixmap.width()/2., self.pixmap.height()/2.
+        painter.drawPixmap(x-w, y-h, self.pixmap)
 
 class FourInOne(ControlRotate):
     def __init__(self):

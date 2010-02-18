@@ -152,10 +152,10 @@ class FFT(Orb2):
         self.popout = numpy.zeros(self.snd.GetVectorSize(), dtype='float32')
         
         self.orange = None # disable orange control
-        self.blue.rotation = 0
     
     def update(self):
         scale = determine_constrained_value(0, 1, self.blue.rotation/1000)
+        scale = 0.9
         self.snd.SetScale(scale)
         self.snd.PopOut(self.popout[0:self.snd.GetVectorSize()])
         if self.hovering:
@@ -704,7 +704,7 @@ class SpecVoc(OrbMultiConnect):
     
     def on_connect_input(self, from_obj, x, y):
         x1, y1 = self.body.position
-        w = self.base.image.width/2
+        w = self.base.pixmap.width()/2
         
         if x1-w <= x <= x1:
             print 'one'
@@ -716,7 +716,7 @@ class SpecVoc(OrbMultiConnect):
             self.snd.SetInput2(self.links[1])
         
         l, r = repr(self.links[0]), repr(self.links[1])
-        self.update_infobox([l[8:l.index(';')], r[8:r.index(';')]])
+        #self.update_infobox([l[8:l.index(';')], r[8:r.index(';')]])
         from_obj._output = self
     
     def update(self):

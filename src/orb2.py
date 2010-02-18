@@ -194,7 +194,6 @@ class Orb2(SoundObject):
     
     def draw(self, painter):
         x, y = self.body.position.x, self.body.position.y
-        y = 700-y
         self.base.draw(painter, x, y)
         if self.orange: # for handling disabled orange controls in some subclasses, for now
             self.orange.draw(painter, x, y)
@@ -215,6 +214,7 @@ class Orb2(SoundObject):
         x, y = event.x(), event.y()
         
         self.active_control = self.get_control(x, y)
+        print self.active_control
         if hasattr(self.active_control, 'mouse_press'):
             self.active_control.mouse_press(event, self.body)
     
@@ -238,7 +238,7 @@ class Orb2(SoundObject):
         rgba = (GLfloat*len(pixels))(*pixels)
         glReadPixels(x, wh-y, 1, 1, GL_RGBA, GL_FLOAT, rgba)
         red, green, blue, alpha = rgba[0], rgba[1], rgba[2], rgba[3]
-        
+        print red, green, blue, alpha
         # determine control clicked by color
         if .55 < red < .88 and \
             .18 < green < .28 and \
@@ -270,25 +270,24 @@ class OrbMultiConnect(SoundObject):
     def __init__(self, position):
         super(OrbMultiConnect, self).__init__()
         
-        self.base = control.Base(batch=space.manage.active.batch, group=space.manage.active.layer0)
-        self.multi_connect = control.MultiConnect(batch=space.manage.active.batch, group=space.manage.active.layer1)
-        self.center = control.Center2(batch=space.manage.active.batch, group=space.manage.active.layer2)
+        self.base = control.Base()
+        self.multi_connect = control.MultiConnect()
+        self.center = control.Center2()
         
         self.init_body(position)
     
-    def draw(self):
+    def draw(self, painter):
         x, y = self.body.position.x, self.body.position.y
-        y = 700-y
-        self.base.draw(x, y)
-        self.multi_connect.sprite.set_position(x, y)
-        self.center.sprite.set_position(x, y)
+        self.base.draw(painter, x, y)
+        self.multi_connect.draw(painter, x, y)
+        self.center.draw(painter, x, y)
     
     def draw_gl(self):
         self.draw_waveform()
     
     def hit_test(self, x, y):
         x2, y2 = self.body.position.x, self.body.position.y
-        w, h = self.base.image.width/2, self.base.image.height/2
+        w, h = self.base.pixmap.width()/2, self.base.pixmap.height()/2
         if (x2-w) <= x <= (x2+w) and (y2-h) <= y <= (y2+h):
             return True
         return False
@@ -297,7 +296,7 @@ class OrbMultiConnect(SoundObject):
         self.body_def = b2.BodyDef(position=position)
         self.body = space.manage.active.world.CreateBody(self.body_def())
         
-        self.circle_def = b2.CircleDef(2., (self.base.image.width-30)/2,
+        self.circle_def = b2.CircleDef(2., (self.base.pixmap.width()-30)/2,
                                        0.3, 0.7)
         
         self.body.CreateShape(self.circle_def())
@@ -329,7 +328,7 @@ class OrbMultiConnect(SoundObject):
     
     def hit_test(self, x, y):
         x2, y2 = self.body.position.x, self.body.position.y
-        w, h = self.base.image.width/2, self.base.image.height/2
+        w, h = self.base.pixmap.width()/2, self.base.pixmap.height()/2
         if (x2-w) <= x <= (x2+w) and (y2-h) <= y <= (y2+h):
             return True
         return False
@@ -344,7 +343,6 @@ class OrbMixer(SoundObject):
     
     def draw(self, painter):
         x, y = self.body.position.x, self.body.position.y
-        y = 700-y
         self.base.draw(painter, x, y)
     
     def draw_gl(self):
@@ -368,10 +366,12 @@ class OrbMixer(SoundObject):
         self.body.SetMassFromShapes()
         self.body.userData = {'destroy': False, 'name': 'orb'}
 
-    def mouse_press(self, x, y, symbol, modifiers):
+    def mouse_press(self, event):
+        x, y = event.x(), event.y()
         self.active_control = self.get_control(x, y)
+        print 'active control is:', self.active_control
         if hasattr(self.active_control, 'mouse_press'):
-            self.active_control.mouse_press(x, y, symbol, modifiers, self.body)
+            self.active_control.mouse_press(event, self.body)
     
     def mouse_release(self, x, y, symbol, modifiers):
         self.active_control = None
